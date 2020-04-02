@@ -1,0 +1,505 @@
+html,body {
+    min-height: 100%;
+    min-height: 100vh;
+    position: relative;
+    width: 100%;
+    width: 100vw;
+    overflow-x: hidden;
+    font-family: 'Poppins', sans-serif;
+    background-color: #F5F5F5;
+}
+
+html, body, h1,h2,h3,h4,h5,h6,p,a,span,div{
+    font-family: 'Poppins', sans-serif;
+}
+
+
+button{
+    cursor: pointer;
+}
+
+
+
+.input-wrap{
+    margin-bottom: 20px;
+
+    .form-field{
+        height: 54px;
+        border-radius: 6px;
+        outline: none;
+        border: 1px solid $darkGray;
+        background-color: $white;
+        font-size: 16px;
+        font-weight: $regular;
+        padding: 16px 20px;
+        width: 100%;
+
+        &:focus {
+            color: $blue;
+            border: 1px solid $blue;
+        }
+    }
+
+    .field-error{
+        border: 1px solid $red !important;
+    }
+
+    .select-field{
+        border: 1px solid $darkGray;
+        border-radius: 6px;
+        min-width: 100%;
+        padding: 0;
+        height: 46px;
+        font-size: 16px;
+        a{
+            color: $black;
+        }
+    
+        .dropdown-menu{
+            min-width: 100%;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    
+        .dropdown-toggle{
+            height: 46px;
+            float: left;
+            width: 100%;
+
+            &::after{
+                display: none;
+            }
+    
+            &::before{
+                content: " ";
+                display: block;
+                border-top: 2px solid $black;
+                border-right: 2px solid $black;
+                width: 10px;
+                height: 10px;
+                transform: rotate(135deg);
+                float: right;
+                margin-top: 4px;
+            }
+        }
+    }
+}
+
+
+.form-box{
+    border-radius: 10px;
+    -webkit-box-shadow: 0px 6px 10px 0px rgba(0,0,0,0.04);
+    -moz-box-shadow: 0px 6px 10px 0px rgba(0,0,0,0.04);
+    box-shadow: 0px 6px 10px 0px rgba(0,0,0,0.04);
+    background-color: $white;
+    padding: 25px 30px 10px 30px;
+    margin-bottom: 30px;
+    .title{
+        font-size: 20px;
+        font-weight: $semiBold;
+        color: $black;
+    }
+
+    .subtitle{
+        font-size: 15px;
+        font-weight: $light;
+        color: $darkGray;
+        margin-bottom: 30px;
+
+    }
+
+    .button{
+        margin-bottom: 10px;
+    }
+
+    .input-wrap{
+        label{
+            font-size: 15px;
+            font-weight: $light;
+            color: $blueGray;
+        }
+        .form-field{
+            height: 46px;
+            border: 1px solid $fieldBorder;
+            &:focus {
+                color: $black;
+                border: 1px solid $blue;
+            }
+    
+        }
+
+        
+
+        textarea{
+            min-height: 280px;
+        }
+
+        .textarea-mini{
+            min-height: 136px;
+        }
+
+
+        @include placeholder{
+            color: $darkGray;
+        }
+    }
+
+    .delete-btn{
+        background-color: transparent;
+        border: 0;
+        float: right;
+
+    }
+}
+
+.checkbox-wrap{
+    display: flex;
+    align-items: center;
+
+    .checkbox{
+        border: 2px solid $darkGray;
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+    }
+
+    .checkbox-label{
+        color: $black;
+        font-size: 16px;
+        font-weight: $light;
+        margin-left: 9px;
+        cursor: pointer;
+    }
+
+}
+
+.radio-wrap{
+    display: flex;
+    align-items: center;
+    float: left;
+    margin-right: 43px;
+
+    .radio{
+        border: 2px solid $darkGray;
+        width: 20px;
+        height: 20px;
+        border-radius: 10px;
+        cursor: pointer;
+    }
+
+    .selected{
+        background-color: $blue;
+        border: 2px solid $blue;
+        -webkit-box-shadow: 0px 3px 6px 0px rgba(0,0,0,0.16);
+        -moz-box-shadow: 0px 3px 6px 0px rgba(0,0,0,0.16);
+        box-shadow: 0px 3px 6px 0px rgba(0,0,0,0.16);
+
+    }
+
+
+    .radio-label{
+        color: $black;
+        font-size: 16px;
+        font-weight: $light;
+        margin-left: 9px;
+        cursor: pointer;
+    }
+
+}
+
+
+.image-picker{
+    width: 100%;
+    height: 280px;
+    position: relative;
+    border: 1px solid $fieldBorder;
+    border-radius: 10px;
+
+    input[type=file]{
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        cursor: pointer;
+    }
+
+    .no-image{
+        pointer-events: none;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        top: 50%;
+        margin-top: -52px;
+        left: 50%;
+        margin-left: -52px;
+
+        .text{
+            margin-top: 16px;
+            color: $blueGray;
+            font-size: 16px;
+            font-weight: $light;
+    
+        }
+    }
+
+    img{
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        object-position: center;
+        padding: 32px;
+    }
+}
+
+.button{
+        background-color: $blue;
+        padding: 13px 20px 12px 20px;
+        font-size: 18px;
+        font-weight: $semiBold;
+        color: $white;
+        border-radius: 6px;
+        outline: none;
+        border: 0;
+        bottom: 45px;
+
+    
+}
+
+.contact-box{
+    label{
+        font-size: 15px;
+        font-weight: $regular;
+        color: $blueGray;
+    }
+
+    p{
+        font-size: 20px;
+        font-weight: $semiBold;
+        color: $black;
+    }
+
+    .spacer{
+        > div {
+            width: 100%;
+            height: 1px;
+            background-color: $blueGray;
+            margin: 26px 0;
+        }
+    }
+
+    .title{
+        margin-bottom: 18px;
+    }
+
+    .content{
+        font-size: 15px;
+        font-weight: $regular;
+        color: $black;
+    
+    }
+
+}
+
+.single-image-picker{
+    min-height: 100%;
+}
+
+.add-section-btn{
+    margin-top: 30px;
+    padding: 10px 20px 9px 20px !important;
+}
+
+.lds-ring {
+    display: inline-block;
+    position: relative;
+    width: 64px;
+    height: 64px;
+  }
+  .lds-ring div {
+    box-sizing: border-box;
+    display: block;
+    position: absolute;
+    width: 51px;
+    height: 51px;
+    margin: 6px;
+    border: 6px solid $blueGray;
+    border-radius: 50%;
+    animation: lds-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+    border-color: $blueGray transparent transparent transparent;
+  }
+  .lds-ring div:nth-child(1) {
+    animation-delay: -0.45s;
+  }
+  .lds-ring div:nth-child(2) {
+    animation-delay: -0.3s;
+  }
+  .lds-ring div:nth-child(3) {
+    animation-delay: -0.15s;
+  }
+  @keyframes lds-ring {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+  
+
+  .file-drop{
+    border: 1px solid $fieldBorder;
+    border-radius: 10px;
+    
+    width: 100%;
+    height: 500px;
+    position: relative;
+    overflow-y: auto;
+    .dropzone{
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        /*margin-left: -32px;
+        margin-top: -32px;
+        */
+
+        input{
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+
+        }
+        > button {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        margin-left: -32px;
+        margin-top: -32px;
+        border: 0;
+        background-color: transparent;
+        
+        i {
+            font-size: 64px;
+            color: $red;
+        }
+
+    }
+
+
+    
+
+    }
+
+    .no-image{
+        pointer-events: none;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        top: 50%;
+        margin-top: -52px;
+        left: 50%;
+        margin-left: -52px;
+
+        .text{
+            margin-top: 16px;
+            color: $blueGray;
+            font-size: 16px;
+            font-weight: $light;
+    
+        }
+    }
+
+
+    .grid-layout{
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 650px;
+
+            .image-wrap{
+            border: 1px solid $fieldBorder;
+            height: 150px;
+            position: relative;
+            background-color: #f6f6f6;
+            border-radius: 6px;
+
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            img {
+                width: 100%;
+                height: 100px;
+                object-fit: contain;
+                object-position: center;
+                padding: 10px;
+            }
+
+            .delete{
+               margin-top: 10px;
+            }
+        
+        }
+    }
+
+    .gallery-grid{
+        .image-wrap{
+            height: 300px;
+        }
+    }
+    
+}
+
+.select-field{
+    .selected{
+        background-color: #ccf2ff;
+    }
+}
+
+
+
+.table-box{
+    border: 1px solid $black;
+    color: $black;
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 24px;
+    text-align: center;
+    height: 150px;
+    margin-top: 24px;
+    padding: 40px;
+}
+
+.table-box a:hover, a:visited, a:link, a:active
+{
+    text-decoration: none;
+}
+
+
+.map{
+    height: 500px;
+}
+
+.google-map-marker{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-left: -16px;
+    margin-top: -16px;
+    img {
+        width: 32px;
+        height: 32px;
+    }
+}
+.map-wrap{
+    position: relative;
+    height: 500px;;
+}
