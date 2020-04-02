@@ -1,0 +1,173 @@
+.login-page{
+    //background: rebeccapurple;
+    min-height: 100vh;
+    background-image: linear-gradient(to left, #0B9DEC ,#3F51B5);
+
+    .block-wrap{
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+
+        @media only screen and (max-width: 768px) {
+            padding-bottom: 100px;
+        }
+    }
+
+    .logo{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 35px;
+        margin-top: -200px;
+
+        @media only screen and (max-width: 768px) {
+            margin-top:0;
+        }
+          
+
+        h2 {
+            color: $white;
+            font-weight: $semiBold;
+            span{
+                font-weight: $light;
+            }
+        }
+    }
+
+    .login-container{
+        -webkit-box-shadow: 0px 10px 20px 0px rgba(0,0,0,0.2);
+        -moz-box-shadow: 0px 10px 20px 0px rgba(0,0,0,0.2);
+        box-shadow: 0px 10px 20px 0px rgba(0,0,0,0.2);
+        //background-color: $white;
+        border-radius: 10;
+    }
+
+    .login-bg{
+        min-height: 440px;
+        background-color: $white;
+        border-radius: 10px 0 0 10px;
+
+        @media only screen and (max-width: 768px) {
+            min-height: unset;
+            border-radius: 10px 10px 0 0;
+        }
+
+
+
+        padding: 0;
+        img{
+            height: 100%;
+            //height: 100%;
+            //object-fit: cover;
+
+            @media only screen and (max-width: 768px) {
+                width: 100%;
+                height: unset;
+                object-fit: cover;
+                border-radius: 10px 10px 0 0;
+
+            }
+    
+        }
+    }
+    .login-form{
+        background-color: $white;
+        border-radius: 0 10px 10px 0;
+        padding-top: 42px;
+        padding: 42px 35px 50px 35px;
+
+        @media only screen and (max-width: 768px) {
+            border-radius: 0 0 10px 10px;
+            padding: 42px 15px 50px 15px;
+
+        }
+
+        h3{
+            color: $blue;
+            font-size: 28px;
+            font-weight: $medium;
+        }
+        h6{
+            color: $black;
+            font-size: 16px;
+            font-weight: $light;
+            margin-bottom: 26px;
+        }
+        .forgot-password-wrap{
+            justify-content: flex-end;
+            display: flex;
+
+            @media only screen and (max-width: 768px) {
+                justify-content: flex-start;
+            }
+
+            .forgot-password{
+                font-size: 16px;
+                font-weight: $light;
+                color: $blue;
+            }
+        }
+
+        button{
+            background-image: linear-gradient(to left, #0B9DEC ,#3F51B5);
+            padding: 13px 20px 12px 20px;
+            font-size: 18px;
+            font-weight: $semiBold;
+            color: $white;
+            border-radius: 6px;
+            outline: none;
+            border: 0;
+        }
+    }
+    
+
+    .select-field{
+        button{
+            all: unset;
+            width: 100%;
+            padding: 5px 10px;
+        }
+
+        border: 1px solid $darkGray;
+        border-radius: 6px;
+        min-width: 100%;
+        padding: 0;
+        height: 46px;
+        font-size: 16px;
+        a{
+            color: $black;
+        }
+    
+        .dropdown-menu{
+            min-width: 100%;
+            max-height: 200px;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+    
+        .dropdown-toggle{
+            height: 46px;
+            float: left;
+            width: 100%;
+
+            &::after{
+                display: none;
+            }
+    
+            &::before{
+                content: " ";
+                display: block;
+                border-top: 2px solid $black;
+                border-right: 2px solid $black;
+                width: 10px;
+                height: 10px;
+                transform: rotate(135deg);
+                float: right;
+                margin-top: 4px;
+            }
+        }
+    }
+}

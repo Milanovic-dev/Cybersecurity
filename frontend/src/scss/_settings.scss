@@ -1,0 +1,22 @@
+
+$white: #FFFFFF;
+$blue: #2196F3;
+$black: #555555;
+$darkGray: #AAAAAA;
+$blueGray: #828DB1;
+$red: #F1646C;
+$fieldBorder: #D9D9D9;
+
+
+$light: 300;
+$semiBold: 600;
+$regular: 400;
+$medium: 500;
+$bold: 700;
+
+@mixin placeholder {
+  ::-webkit-input-placeholder {@content}
+  :-moz-placeholder           {@content}
+  ::-moz-placeholder          {@content}
+  :-ms-input-placeholder      {@content}  
+}
