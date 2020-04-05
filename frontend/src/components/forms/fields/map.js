@@ -25,7 +25,6 @@ export class Map extends Component {
 
 
     initMap() {
-        console.log("InitMAP");
         this.setState({
             _mapInit: true
         });

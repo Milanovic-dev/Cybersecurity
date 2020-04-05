@@ -1,8 +1,5 @@
-
 import React, { Component } from 'react';
-import { Link, Redirect } from 'react-router-dom';
 
-import Isvg from 'react-inlinesvg';
 
 import {
     Dropdown,
@@ -14,7 +11,6 @@ import {
 
 
 function objectIndexOf(arr, _id) {
-    console.log('AAAAAAAAAAAAAA');
     var found = false;
     for (var i = 0; i < arr.length; i++) {
         if (arr[i]._id == _id) {
@@ -22,7 +18,6 @@ function objectIndexOf(arr, _id) {
             return i;
         }
     }
-
     return -1;
 
 }
@@ -31,7 +26,6 @@ class MultiSelect extends Component {
     constructor(props) {
         super(props);
         this.state = {
-
         };
     }
 
