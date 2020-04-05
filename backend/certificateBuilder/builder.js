@@ -1,5 +1,5 @@
 const WebCrypto = require('node-webcrypto-ossl');
-const { stringToArrayBuffer, bufferToHexCodes } = require("pvutils");
+import { stringToArrayBuffer, arrayBufferToString, fromBase64, toBase64, bufferToHexCodes } from "pvutils";
 
 const asn1js = require("asn1js");
 
@@ -19,6 +19,18 @@ const { Certificate,
 
 const nodeSpecificCrypto = require('./node-crypto');
 const webcrypto = new WebCrypto.Crypto();
+
+function str2ab(str) {
+    var buf = new ArrayBuffer(str.length); // 2 bytes for each char
+    var bufView = new Uint8Array(buf);
+    for (var i=0, strLen=str.length; i < strLen; i++) {
+      bufView[i] = str.charCodeAt(i);
+    }
+    return buf;
+  }
+  
+
+
 
 function formatPEM(pemString) {
     /// <summary>Format string in order to have each line with length equal to 63</summary>
@@ -281,6 +293,11 @@ function generateCertificate(params) {
     return createCertificateInternal(params).then((result) => {
         const certificateString = String.fromCharCode.apply(null, new Uint8Array(result.certificateBuffer));
         const privateKeyString = String.fromCharCode.apply(null, new Uint8Array(result.privateKeyBuffer));
+        console.log(result.certificateBuffer)
+        console.log(certificateString);
+        for(let i=0;i<20;i++){
+            console.log( new Uint8Array(result.certificateBuffer)[i]);
+        }
 
         return {
             certificate: `-----BEGIN CERTIFICATE-----\r\n${formatPEM(Buffer.from(certificateString).toString('base64'))}\r\n-----END CERTIFICATE-----\r\n`,
@@ -297,7 +314,10 @@ function generateCertificate(params) {
 
 
 //*********************************************************************************
-function parseCertificate(certificateBuffer) {
+function parseCertificate(cert) {
+    let certificateBuffer = str2ab(Buffer.from(cert.replace('-----BEGIN CERTIFICATE-----\r\n','').replace('\r\n-----END CERTIFICATE-----\r\n','').replace(/\r\n/g, ''), 'base64').toString('utf8'));
+
+
     //region Initial check
     if (certificateBuffer.byteLength === 0) {
         console.log("Nothing to parse!");
@@ -428,5 +448,6 @@ function parseCertificate(certificateBuffer) {
 
 
 module.exports = {
-    generateCertificate: generateCertificate
+    generateCertificate: generateCertificate,
+    parseCertificate: parseCertificate
 }
