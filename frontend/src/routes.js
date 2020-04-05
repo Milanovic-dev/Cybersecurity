@@ -27,7 +27,6 @@ class Routes extends Component {
                                 <AdminLoginPage {...renderProps} {...this.props} />
                             )}
                         />
-
                         <Route
                             path="/login"
                             exact
@@ -35,9 +34,6 @@ class Routes extends Component {
                                 <AdminLoginPage {...renderProps} {...this.props} />
                             )}
                         />
-
-                
-
                         <Route
                             path="/admin/list"
                             exact

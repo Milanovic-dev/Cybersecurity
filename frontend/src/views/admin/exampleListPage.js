@@ -1,21 +1,13 @@
 import React, { Component } from 'react';
-import { Link, Redirect } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import Isvg from 'react-inlinesvg';
 import Page from '../../containers/admin/page';
-
 import editIcon from '../../assets/svg/edit.svg';
 import deleteIcon from '../../assets/svg/delete.svg';
-import adminIcon from '../../assets/svg/admin.svg';
-
-
 import {
     Container,
     Row,
-    Col,
-    Dropdown,
-    DropdownItem,
-    DropdownMenu,
-    DropdownToggle
+    Col
 } from 'reactstrap';
 
 class ExampleListPage extends Component {
@@ -71,12 +63,7 @@ class ExampleListPage extends Component {
 
         return (
             <div className="page-wrap">
-                {
-                    /*!localStorage.token ? <Redirect to='/login' /> : null*/
-                }
-
                 <Container fluid className="table">
-
                     <Row className="page-title">
                         <Col lg="12">
                             <h3>Lista lijekova</h3>
@@ -90,7 +77,6 @@ class ExampleListPage extends Component {
 
                             <span className="name">OPCIJE</span>
                         </Col>
-
                     </Row>
                     {
                         this.state.items.map((item, idx) => {
@@ -108,7 +94,6 @@ class ExampleListPage extends Component {
                             )
                         })
                     }
-
                 </Container>
             </div>
         );

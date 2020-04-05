@@ -1,6 +1,6 @@
 {
-  "name": "klinicki-centar-frontend",
-  "version": "0.1.0",
+  "name": "cyber-security-frontend",
+  "version": "0.0.1",
   "private": true,
   "dependencies": {
     "@tinymce/tinymce-react": "^3.3.2",
