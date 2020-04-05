@@ -1,23 +1,11 @@
-
 import React, { Component } from 'react';
-import { Link, Redirect } from 'react-router-dom';
-import {
-    Container,
-    Row,
-    Col,
-} from 'reactstrap';
-
-import Isvg from 'react-inlinesvg';
-import image from '../../../assets/svg/image.svg';
 import { Editor } from '@tinymce/tinymce-react';
 
 class HtmlImage extends Component {
     constructor(props) {
         super(props);
         this.selectFile = this.selectFile.bind(this);
-
         this.state = {
-
         };
     }
 
@@ -25,14 +13,12 @@ class HtmlImage extends Component {
         let input = e.target;
         if (input.files && input.files[0]) {
             var reader = new FileReader();
-
             reader.onload = (e) => {
                 this.props.onChange({
                     type: 'image',
                     value: e.target.result
                 })
             }
-
             reader.readAsDataURL(input.files[0]);
         }
     }
@@ -58,13 +44,7 @@ class HtmlImage extends Component {
                         this.props.onChange(val);
                     }
                     this.forceUpdate();
-
-
                 }} />
-
-
-
-
         );
     }
 }

@@ -1,23 +1,11 @@
-
 import React, { Component } from 'react';
-import { Link, Redirect } from 'react-router-dom';
-
-import Isvg from 'react-inlinesvg';
-
-
 
 class Text extends Component {
     constructor(props) {
         super(props);
-
         this.state = {
         };
     }
-
-
-
-
-
 
     render() {
         return (
@@ -47,8 +35,6 @@ class Text extends Component {
                 }} disabled={this.props.disabled} value={this.props.multilang ? (this.props.value && this.props.value[this.props.lang]) ? this.props.value[this.props.lang] : '' : this.props.value} placeholder={this.props.placeholder} />
 
             </>
-
-
         );
     }
 }

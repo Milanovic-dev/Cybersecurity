@@ -1,7 +1,5 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { Field, reduxForm } from 'redux-form'
-import Isvg from 'react-inlinesvg';
-
 import Text from './fields/text';
 import Image from './fields/image';
 
@@ -19,7 +17,6 @@ const renderTextField = ({
     label,
     meta: { touched, error },
 }) => (
-
         <Text
             placeholder={placeholder}
             label={label}
@@ -48,19 +45,12 @@ class form extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-
         }
     }
 
-    componentDidMount() {
-
-    }
-
     render() {
-
-        const { handleSubmit, pristine, reset, submitting } = this.props;
+        const { handleSubmit} = this.props;
         console.log(this.props);
-
         return (
             <form onSubmit={handleSubmit}>
                 <Row>
