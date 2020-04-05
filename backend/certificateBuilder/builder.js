@@ -72,6 +72,17 @@ const issuerTypesMap = {
     email: '1.2.840.113549.1.9.1'
 }
 
+const issuerTypesRevMap = {
+    '2.5.4.6': 'country',
+    '2.5.4.10': 'organizationName',
+    '2.5.4.11': 'organizationalUnit',
+    '2.5.4.3': 'commonName',
+    '2.5.4.7': 'localityName',
+    '2.5.4.8': 'stateName',
+    '1.2.840.113549.1.9.1': 'email'
+}
+
+
 const extendedKeyUsageMap = {
     "anyExtendedKeyUsage": "2.5.29.37.0",       // anyExtendedKeyUsage
     "serverAuth": "1.3.6.1.5.5.7.3.1", // id-kp-serverAuth
@@ -293,11 +304,6 @@ function generateCertificate(params) {
     return createCertificateInternal(params).then((result) => {
         const certificateString = String.fromCharCode.apply(null, new Uint8Array(result.certificateBuffer));
         const privateKeyString = String.fromCharCode.apply(null, new Uint8Array(result.privateKeyBuffer));
-        console.log(result.certificateBuffer)
-        console.log(certificateString);
-        for(let i=0;i<20;i++){
-            console.log( new Uint8Array(result.certificateBuffer)[i]);
-        }
 
         return {
             certificate: `-----BEGIN CERTIFICATE-----\r\n${formatPEM(Buffer.from(certificateString).toString('base64'))}\r\n-----END CERTIFICATE-----\r\n`,
@@ -317,6 +323,11 @@ function generateCertificate(params) {
 function parseCertificate(cert) {
     let certificateBuffer = str2ab(Buffer.from(cert.replace('-----BEGIN CERTIFICATE-----\r\n','').replace('\r\n-----END CERTIFICATE-----\r\n','').replace(/\r\n/g, ''), 'base64').toString('utf8'));
 
+    let result = {
+        issuer: { },
+        subject: { },
+        extendedKeyUsage: [  ]
+    }
 
     //region Initial check
     if (certificateBuffer.byteLength === 0) {
@@ -352,8 +363,7 @@ function parseCertificate(cert) {
         if (typeof typeval === "undefined")
             typeval = typeAndValue.type;
 
-        const subjval = typeAndValue.value.valueBlock.value;
-        console.log(typeval, subjval);
+        result.issuer[issuerTypesRevMap[typeAndValue.type]] = typeAndValue.value.valueBlock.value;
     }
     //endregion
 
@@ -363,27 +373,13 @@ function parseCertificate(cert) {
         if (typeof typeval === "undefined")
             typeval = typeAndValue.type;
 
-
-        const subjval = typeAndValue.value.valueBlock.value;
-        console.log(typeval, subjval);
-
+        result.subject[issuerTypesRevMap[typeAndValue.type]] = typeAndValue.value.valueBlock.value;
     }
     //endregion
 
-    //region Put information about X.509 certificate serial number
-    // noinspection InnerHTMLJS
-    console.log(bufferToHexCodes(certificate.serialNumber.valueBlock.valueHex));
-    //endregion
-
-    //region Put information about issuance date
-    // noinspection InnerHTMLJS
-    console.log(certificate.notBefore.value.toString());
-    //endregion
-
-    //region Put information about expiration date
-    // noinspection InnerHTMLJS
-    console.log(certificate.notAfter.value.toString());
-    //endregion
+    result.serialNumber = bufferToHexCodes(certificate.serialNumber.valueBlock.valueHex);
+    result.validFrom = certificate.notBefore.value;
+    result.validTo = certificate.notBefore.value;
 
     //region Put information about subject public key size
     let publicKeySize = "< unknown >";
@@ -403,9 +399,7 @@ function parseCertificate(cert) {
         publicKeySize = modulusBitLength.toString();
     }
 
-    // noinspection InnerHTMLJS
-    console.log(publicKeySize);
-    //endregion
+    result.publicKeySize = publicKeySize;
 
     //region Put information about signature algorithm
     const algomap = {
@@ -430,17 +424,18 @@ function parseCertificate(cert) {
     else
         signatureAlgorithm = `${signatureAlgorithm} (${certificate.signatureAlgorithm.algorithmId})`;
 
-    // noinspection InnerHTMLJS
-    console.log(signatureAlgorithm);
+    result.signatureAlgorithm = signatureAlgorithm;
     //endregion
 
     //region Put information about certificate extensions
     if ("extensions" in certificate) {
         for (let i = 0; i < certificate.extensions.length; i++) {
-            console.log(certificate.extensions[i].extnID)
+            result.extendedKeyUsage.push(certificate.extensions[i].extnID);
         }
 
     }
+
+    return result;
     //endregion
 }
 
