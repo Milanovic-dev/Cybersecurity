@@ -5,7 +5,7 @@ const cors = require('cors')
 const bodyParser = require("body-parser");
 
 const adminModule = new (require('./admin/admin'))();
-const {generateCertificate} = require('./certificateBuilder/builder');
+const {generateCertificate, parseCertificate} = require('./certificateBuilder/builder');
 
 const isAdminAuthenticated = require('./admin/auth');
 
@@ -88,7 +88,8 @@ async function test(){
         ]    
     });
 
-    console.log(result);
+    console.log(result.certificate);
+    parseCertificate(result.certificate);
 }
 
 test();
