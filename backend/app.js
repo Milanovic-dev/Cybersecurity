@@ -89,7 +89,7 @@ async function test(){
     });
 
     console.log(result.certificate);
-    parseCertificate(result.certificate);
+    console.log(parseCertificate(result.certificate));
 }
 
 test();
