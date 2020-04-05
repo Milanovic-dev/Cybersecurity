@@ -95,6 +95,19 @@ const extendedKeyUsageMap = {
     "MicrosoftEncryptedFileSystem": "1.3.6.1.4.1.311.10.3.4"  // Microsoft Encrypted File System
 }
 
+const extendedKeyUsageRevMap = {
+    "2.5.29.37.0" : "anyExtendedKeyUsage",       // anyExtendedKeyUsage
+    "1.3.6.1.5.5.7.3.1" : "serverAuth", // id-kp-serverAuth
+    "1.3.6.1.5.5.7.3.2" : "clientAuth", // id-kp-clientAuth
+    "1.3.6.1.5.5.7.3.3" : "codeSigning", // id-kp-codeSigning
+    "1.3.6.1.5.5.7.3.4" : "emailProtection", // id-kp-emailProtection
+    "1.3.6.1.5.5.7.3.8" : "timeStamping", // id-kp-timeStamping
+    "1.3.6.1.5.5.7.3.9" : "OCSPSigning", // id-kp-OCSPSigning
+    "1.3.6.1.4.1.311.10.3.1" : "MicrosoftCertificateTrustListSigning", // Microsoft Certificate Trust List signing
+    "1.3.6.1.4.1.311.10.3.4" : "MicrosoftEncryptedFileSystem"  // Microsoft Encrypted File System
+}
+
+
 function createCertificateInternal(params) {
     //region Initial variables 
     let sequence = Promise.resolve();
@@ -131,6 +144,20 @@ function createCertificateInternal(params) {
         }
 
     }
+
+    if (params.subject) {
+        for (let key in params.subject) {
+            if (params.subject.hasOwnProperty(key)) {
+                certificate.subject.typesAndValues.push(new AttributeTypeAndValue({
+                    type: issuerTypesMap[key],
+                    value: new asn1js.PrintableString({ value: params.subject[key] })
+                }));
+
+            }
+        }
+
+    }
+
 
     certificate.notBefore.value = params.validFrom;
     certificate.notAfter.value = params.validTo;
@@ -326,7 +353,7 @@ function parseCertificate(cert) {
     let result = {
         issuer: { },
         subject: { },
-        extendedKeyUsage: [  ]
+        extensions: []
     }
 
     //region Initial check
@@ -430,10 +457,18 @@ function parseCertificate(cert) {
     //region Put information about certificate extensions
     if ("extensions" in certificate) {
         for (let i = 0; i < certificate.extensions.length; i++) {
-            result.extendedKeyUsage.push(certificate.extensions[i].extnID);
+            result.extensions.push(certificate.extensions[i].extnID);
         }
 
     }
+
+    if ("extendedKeyUsage" in certificate) {
+        for (let i = 0; i < certificate.extendedKeyUsage.length; i++) {
+            result.extendedKeyUsage.push(extendedKeyUsageRevMap[certificate.extensions[i].extnID]);
+        }
+
+    }
+
 
     return result;
     //endregion
