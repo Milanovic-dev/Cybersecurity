@@ -1,5 +1,5 @@
 const WebCrypto = require('node-webcrypto-ossl');
-const { stringToArrayBuffer, bufferToHexCodes } = require("pvutils");
+import { stringToArrayBuffer, arrayBufferToString, fromBase64, toBase64, bufferToHexCodes } from "pvutils";
 
 const asn1js = require("asn1js");
 
@@ -19,6 +19,18 @@ const { Certificate,
 
 const nodeSpecificCrypto = require('./node-crypto');
 const webcrypto = new WebCrypto.Crypto();
+
+function str2ab(str) {
+    var buf = new ArrayBuffer(str.length); // 2 bytes for each char
+    var bufView = new Uint8Array(buf);
+    for (var i=0, strLen=str.length; i < strLen; i++) {
+      bufView[i] = str.charCodeAt(i);
+    }
+    return buf;
+  }
+  
+
+
 
 function formatPEM(pemString) {
     /// <summary>Format string in order to have each line with length equal to 63</summary>
@@ -60,6 +72,17 @@ const issuerTypesMap = {
     email: '1.2.840.113549.1.9.1'
 }
 
+const issuerTypesRevMap = {
+    '2.5.4.6': 'country',
+    '2.5.4.10': 'organizationName',
+    '2.5.4.11': 'organizationalUnit',
+    '2.5.4.3': 'commonName',
+    '2.5.4.7': 'localityName',
+    '2.5.4.8': 'stateName',
+    '1.2.840.113549.1.9.1': 'email'
+}
+
+
 const extendedKeyUsageMap = {
     "anyExtendedKeyUsage": "2.5.29.37.0",       // anyExtendedKeyUsage
     "serverAuth": "1.3.6.1.5.5.7.3.1", // id-kp-serverAuth
@@ -71,6 +94,19 @@ const extendedKeyUsageMap = {
     "MicrosoftCertificateTrustListSigning": "1.3.6.1.4.1.311.10.3.1", // Microsoft Certificate Trust List signing
     "MicrosoftEncryptedFileSystem": "1.3.6.1.4.1.311.10.3.4"  // Microsoft Encrypted File System
 }
+
+const extendedKeyUsageRevMap = {
+    "2.5.29.37.0" : "anyExtendedKeyUsage",       // anyExtendedKeyUsage
+    "1.3.6.1.5.5.7.3.1" : "serverAuth", // id-kp-serverAuth
+    "1.3.6.1.5.5.7.3.2" : "clientAuth", // id-kp-clientAuth
+    "1.3.6.1.5.5.7.3.3" : "codeSigning", // id-kp-codeSigning
+    "1.3.6.1.5.5.7.3.4" : "emailProtection", // id-kp-emailProtection
+    "1.3.6.1.5.5.7.3.8" : "timeStamping", // id-kp-timeStamping
+    "1.3.6.1.5.5.7.3.9" : "OCSPSigning", // id-kp-OCSPSigning
+    "1.3.6.1.4.1.311.10.3.1" : "MicrosoftCertificateTrustListSigning", // Microsoft Certificate Trust List signing
+    "1.3.6.1.4.1.311.10.3.4" : "MicrosoftEncryptedFileSystem"  // Microsoft Encrypted File System
+}
+
 
 function createCertificateInternal(params) {
     //region Initial variables 
@@ -108,6 +144,20 @@ function createCertificateInternal(params) {
         }
 
     }
+
+    if (params.subject) {
+        for (let key in params.subject) {
+            if (params.subject.hasOwnProperty(key)) {
+                certificate.subject.typesAndValues.push(new AttributeTypeAndValue({
+                    type: issuerTypesMap[key],
+                    value: new asn1js.PrintableString({ value: params.subject[key] })
+                }));
+
+            }
+        }
+
+    }
+
 
     certificate.notBefore.value = params.validFrom;
     certificate.notAfter.value = params.validTo;
@@ -297,7 +347,15 @@ function generateCertificate(params) {
 
 
 //*********************************************************************************
-function parseCertificate(certificateBuffer) {
+function parseCertificate(cert) {
+    let certificateBuffer = str2ab(Buffer.from(cert.replace('-----BEGIN CERTIFICATE-----\r\n','').replace('\r\n-----END CERTIFICATE-----\r\n','').replace(/\r\n/g, ''), 'base64').toString('utf8'));
+
+    let result = {
+        issuer: { },
+        subject: { },
+        extensions: []
+    }
+
     //region Initial check
     if (certificateBuffer.byteLength === 0) {
         console.log("Nothing to parse!");
@@ -332,8 +390,7 @@ function parseCertificate(certificateBuffer) {
         if (typeof typeval === "undefined")
             typeval = typeAndValue.type;
 
-        const subjval = typeAndValue.value.valueBlock.value;
-        console.log(typeval, subjval);
+        result.issuer[issuerTypesRevMap[typeAndValue.type]] = typeAndValue.value.valueBlock.value;
     }
     //endregion
 
@@ -343,27 +400,13 @@ function parseCertificate(certificateBuffer) {
         if (typeof typeval === "undefined")
             typeval = typeAndValue.type;
 
-
-        const subjval = typeAndValue.value.valueBlock.value;
-        console.log(typeval, subjval);
-
+        result.subject[issuerTypesRevMap[typeAndValue.type]] = typeAndValue.value.valueBlock.value;
     }
     //endregion
 
-    //region Put information about X.509 certificate serial number
-    // noinspection InnerHTMLJS
-    console.log(bufferToHexCodes(certificate.serialNumber.valueBlock.valueHex));
-    //endregion
-
-    //region Put information about issuance date
-    // noinspection InnerHTMLJS
-    console.log(certificate.notBefore.value.toString());
-    //endregion
-
-    //region Put information about expiration date
-    // noinspection InnerHTMLJS
-    console.log(certificate.notAfter.value.toString());
-    //endregion
+    result.serialNumber = bufferToHexCodes(certificate.serialNumber.valueBlock.valueHex);
+    result.validFrom = certificate.notBefore.value;
+    result.validTo = certificate.notBefore.value;
 
     //region Put information about subject public key size
     let publicKeySize = "< unknown >";
@@ -383,9 +426,7 @@ function parseCertificate(certificateBuffer) {
         publicKeySize = modulusBitLength.toString();
     }
 
-    // noinspection InnerHTMLJS
-    console.log(publicKeySize);
-    //endregion
+    result.publicKeySize = publicKeySize;
 
     //region Put information about signature algorithm
     const algomap = {
@@ -410,17 +451,26 @@ function parseCertificate(certificateBuffer) {
     else
         signatureAlgorithm = `${signatureAlgorithm} (${certificate.signatureAlgorithm.algorithmId})`;
 
-    // noinspection InnerHTMLJS
-    console.log(signatureAlgorithm);
+    result.signatureAlgorithm = signatureAlgorithm;
     //endregion
 
     //region Put information about certificate extensions
     if ("extensions" in certificate) {
         for (let i = 0; i < certificate.extensions.length; i++) {
-            console.log(certificate.extensions[i].extnID)
+            result.extensions.push(certificate.extensions[i].extnID);
         }
 
     }
+
+    if ("extendedKeyUsage" in certificate) {
+        for (let i = 0; i < certificate.extendedKeyUsage.length; i++) {
+            result.extendedKeyUsage.push(extendedKeyUsageRevMap[certificate.extensions[i].extnID]);
+        }
+
+    }
+
+
+    return result;
     //endregion
 }
 
@@ -428,5 +478,6 @@ function parseCertificate(certificateBuffer) {
 
 
 module.exports = {
-    generateCertificate: generateCertificate
+    generateCertificate: generateCertificate,
+    parseCertificate: parseCertificate
 }
