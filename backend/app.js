@@ -5,6 +5,8 @@ const cors = require('cors')
 const bodyParser = require("body-parser");
 
 const adminModule = new (require('./admin/admin'))();
+const {generateCertificate} = require('./certificateBuilder/builder');
+
 const isAdminAuthenticated = require('./admin/auth');
 
 const exampleModule = new (require('./example/example'))();
@@ -52,6 +54,44 @@ app.get('/example/update/:id/:someValue', async (req, res) => {
 app.get('/example/query', async (req, res) => {
     res.status(200).send(await exampleModule.query());
 });
+
+
+
+async function test(){
+    let result = await generateCertificate({
+        serialNumber: 1,
+        issuer: {
+            country: 'BA',
+            organizationName: 'Test',
+            organizationalUnit: 'Test',
+            commonName: 'localhost',
+            localityName: 'Bijeljina',
+            stateName: 'BiH',
+            email: 'stanojevic.milan97@gmail.com'
+        },
+        validFrom: new Date(2020, 1, 1),
+        validTo: new Date(2021, 1, 1),
+        basicConstraints: {
+            isCA: true,
+            pathLengthConstraint: 3
+        },
+        extendedKeyUsage: [
+            "anyExtendedKeyUsage",
+            "serverAuth",
+            "clientAuth",
+            "codeSigning",
+            "emailProtection",
+            "timeStamping",
+            "OCSPSigning",
+            "MicrosoftCertificateTrustListSigning",
+            "MicrosoftEncryptedFileSystem"
+        ]    
+    });
+
+    console.log(result);
+}
+
+test();
 
 
 export default app;
