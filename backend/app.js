@@ -5,7 +5,7 @@ const cors = require('cors')
 const bodyParser = require("body-parser");
 
 const adminModule = new (require('./admin/admin'))();
-const {generateCertificate} = require('./certificateBuilder/builder');
+const {generateCertificate, parseCertificate} = require('./certificateBuilder/builder');
 
 const isAdminAuthenticated = require('./admin/auth');
 
@@ -69,6 +69,16 @@ async function test(){
             stateName: 'BiH',
             email: 'stanojevic.milan97@gmail.com'
         },
+        subject: {
+            country: 'SR',
+            organizationName: 'FTN',
+            organizationalUnit: 'Test',
+            commonName: 'localhost',
+            localityName: 'Novi Sad',
+            stateName: 'Serbia',
+            email: 'stanojevic.milan97@gmail.com'
+        },
+
         validFrom: new Date(2020, 1, 1),
         validTo: new Date(2021, 1, 1),
         basicConstraints: {
@@ -88,7 +98,8 @@ async function test(){
         ]    
     });
 
-    console.log(result);
+    console.log(result.certificate);
+    console.log(parseCertificate(result.certificate));
 }
 
 test();
