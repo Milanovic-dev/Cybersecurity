@@ -69,6 +69,16 @@ async function test(){
             stateName: 'BiH',
             email: 'stanojevic.milan97@gmail.com'
         },
+        subject: {
+            country: 'SR',
+            organizationName: 'FTN',
+            organizationalUnit: 'Test',
+            commonName: 'localhost',
+            localityName: 'Novi Sad',
+            stateName: 'Serbia',
+            email: 'stanojevic.milan97@gmail.com'
+        },
+
         validFrom: new Date(2020, 1, 1),
         validTo: new Date(2021, 1, 1),
         basicConstraints: {
