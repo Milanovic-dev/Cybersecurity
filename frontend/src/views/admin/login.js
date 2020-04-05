@@ -1,37 +1,24 @@
 import React, { Component } from 'react';
-import { Link, Redirect } from 'react-router-dom';
-import Isvg from 'react-inlinesvg';
-
-
+import { Link } from 'react-router-dom';
 import logo from '../../assets/images/logo.png';
 import bg from '../../assets/images/login-bg.png';
 import LoginForm from '../../components/forms/loginForm';
-
-
 import {
     Container,
     Row,
-    Col,
-    Dropdown,
-    DropdownItem,
-    DropdownMenu,
-    DropdownToggle
+    Col
 } from 'reactstrap';
 
 class LoginPage extends Component {
     constructor(props) {
         super(props);
         this.login = this.login.bind(this);
-
         this.state = {
-
         };
     }
 
     login(data) {
-
-
-        if (data.type == 'admin') {
+        if (data.type === 'admin') {
             fetch('http://127.0.0.1:4000/admin/login', {
                 method: 'POST',
                 headers: {
@@ -56,23 +43,22 @@ class LoginPage extends Component {
                         
                         localStorage.setItem('token', token);
                         if (result.required){
-                            this.props[0].history.push('/admin/changePassword');
+
+                            this.props[0].history.push('/admin/changePassword')
 
                         }else{
-                            this.props[0].history.push('/admin/clinic');
-   
-                        }
 
-                       
+                            this.props[0].history.push('/admin/clinic');
+
+                        }
                     })
-            
                 } else {
                     this.setState({
                         error: result.error
                     })
                 }
             })
-        }else if (data.type == 'clinicAdmin'){
+        }else if (data.type === 'clinicAdmin'){
             fetch('http://127.0.0.1:4000/clinic/admin/login', {
                 method: 'POST',
                 headers: {
@@ -105,8 +91,6 @@ class LoginPage extends Component {
 
                        
                     })
-                    // localStorage.setItem('clinicAdminToken', result.token);
-                    // this.props[0].history.push('/clinic/users');
                 } else {
                     this.setState({
                         error: result.error
@@ -114,7 +98,7 @@ class LoginPage extends Component {
                 }
             })
     
-        }else if (data.type == 'clinicUser'){
+        }else if (data.type === 'clinicUser'){
             fetch('http://127.0.0.1:4000/clinic/user/login', {
                 method: 'POST',
                 headers: {
@@ -147,8 +131,7 @@ class LoginPage extends Component {
 
                        
                     })
-                    // localStorage.setItem('clinicUserToken', result.token);
-                    // this.props[0].history.push('/doctor');
+
                 } else {
                     this.setState({
                         error: result.error
@@ -156,7 +139,7 @@ class LoginPage extends Component {
                 }
             })
     
-        }else if (data.type == 'patient'){
+        }else if (data.type === 'patient'){
             fetch('http://127.0.0.1:4000/patient/login', {
                 method: 'POST',
                 headers: {
@@ -187,15 +170,12 @@ class LoginPage extends Component {
 
         return (
             <div className="login-page">
-                {
-                   /* (localStorage.token) ? <Redirect to='/admin/clinic' /> : null */
-                }
+
                 <Container className="block-wrap">
                     <Row>
                         <Col lg="12">
                             <div className="logo">
                                 <img src={logo} />
-                                {/* <h2>React<span>Admin</span></h2> */}
                             </div>
                         </Col>
                         <Col lg="12">
@@ -220,21 +200,14 @@ class LoginPage extends Component {
                                                     null
                                             }
 
-                                            <Link to='/patient/register'>Registruj se kao pacijent</Link>
-
+                                            <Link to='/patient/register'>Registruj se</Link>
                                         </Container>
-
                                     </Col>
-
                                 </Row>
                             </Container>
                         </Col>
                     </Row>
-
                 </Container>
-
-
-
             </div >
         );
     }

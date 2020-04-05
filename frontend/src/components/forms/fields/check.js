@@ -4,7 +4,6 @@ class Check extends Component {
     constructor(props) {
         super(props);
         this.state = {
-
         };
     }
 
@@ -14,7 +13,6 @@ class Check extends Component {
                 <div className={this.props.value ? "checkbox checked" : "checkbox"}></div>
                 {this.props.label ? <span className="checkbox-label">Remember me</span> : null}
             </div>
-
         );
     }
 }

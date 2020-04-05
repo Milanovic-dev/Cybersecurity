@@ -1,21 +1,11 @@
 import React, { Component } from 'react';
-import { Link, Redirect } from 'react-router-dom';
-import Isvg from 'react-inlinesvg';
 import Page from '../../containers/admin/page';
-
 import Form from '../../components/forms/exampleForm';
-
-
-
 
 import {
     Container,
     Row,
     Col,
-    Dropdown,
-    DropdownItem,
-    DropdownMenu,
-    DropdownToggle
 } from 'reactstrap';
 
 class ExampleFormPage extends Component {
@@ -49,7 +39,7 @@ class ExampleFormPage extends Component {
     }
 
     componentDidMount() {
-        if (this.props[0].match.params.id != 'new') {
+        if (this.props[0].match.params.id !== 'new') {
             fetch('http://127.0.0.1:4000/admin/medications/' + this.props[0].match.params.id, {
                 method: 'GET',
                 headers: {
@@ -71,13 +61,7 @@ class ExampleFormPage extends Component {
     render() {
         return (
             <div className="page-wrap">
-                {
-                    /*!localStorage.token ? <Redirect to='/login' /> : null*/
-                
-                }
-
                 <Container fluid>
-
                     <Row className="page-title">
                         <Col lg="12">
                             {this.props[0].match.params.id !== 'new' ? <h3>Edit</h3> : <h3>Create</h3>}
@@ -96,8 +80,6 @@ class ExampleFormPage extends Component {
                             null
                     }
                 </Container>
-
-
             </div>
         );
     }

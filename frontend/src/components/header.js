@@ -1,15 +1,8 @@
 import React, { Component } from 'react';
-import Isvg from 'react-inlinesvg';
-import { Link } from 'react-router-dom';
-import search from '../assets/svg/search.svg';
-import bell from '../assets/svg/bell.svg';
-import userImage from '../assets/images/user.jpg';
-
 import {
   Container,
   Row,
   Col,
-  Dropdown,
   DropdownItem,
   DropdownMenu,
   DropdownToggle,
@@ -18,15 +11,12 @@ import {
 
 
 class Header extends Component {
-
   constructor(props) {
     super(props);
     this.handleClickOutside = this.handleClickOutside.bind(this);
-
     this.state = {
     };
   }
-
 
   componentDidMount() {
     document.addEventListener('mousedown', this.handleClickOutside);
@@ -35,7 +25,6 @@ class Header extends Component {
   componentWillUnmount() {
     document.removeEventListener('mousedown', this.handleClickOutside);
   }
-
 
   handleClickOutside(event) {
     if (this.wrapperRef && !this.wrapperRef.contains(event.target)) {
@@ -46,25 +35,13 @@ class Header extends Component {
     }
   }
 
-
   render() {
-
     return (
       <Container fluid>
         <Row>
           <Col lg="12">
             <header>
-
-              {/*<div className="search-wrap">
-                <input type="text" placeholder="Search" />
-                <Isvg src={search} />
-              </div>
-    */}
               <div className="account-wrap">
-                {/*<div className="notifications">
-                  <Isvg src={bell} />
-                  <div className="count">4</div>
-  </div>*/}
                 <UncontrolledDropdown>
                   <DropdownToggle caret>
                     {this.props.lang}
@@ -74,9 +51,7 @@ class Header extends Component {
                     <DropdownItem onClick={() => this.props.changeLanguage('en')}>en</DropdownItem>
                   </DropdownMenu>
                 </UncontrolledDropdown>
-
               </div>
-
             </header>
           </Col>
         </Row>

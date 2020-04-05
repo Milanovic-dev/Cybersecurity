@@ -1,23 +1,12 @@
-
 import React, { Component } from 'react';
-import { Link, Redirect } from 'react-router-dom';
-import {
-    Container,
-    Row,
-    Col,
-} from 'reactstrap';
-
 import Isvg from 'react-inlinesvg';
 import image from '../../../assets/svg/image.svg';
-import { Editor } from '@tinymce/tinymce-react';
 
 class Image extends Component {
     constructor(props) {
         super(props);
         this.selectFile = this.selectFile.bind(this);
-
         this.state = {
-
         };
     }
 
@@ -45,9 +34,7 @@ class Image extends Component {
                         _loading: null
                     })
                 });
-        
             }
-
             reader.readAsDataURL(input.files[0]);
         }
     }
@@ -71,10 +58,8 @@ class Image extends Component {
                                 </div>
                             }
                         </div>
-
-
         );
     }
-}
+  }
 
 export default Image;
