@@ -3,7 +3,7 @@ const http = require("http");
 const port = process.env.PORT || 4000;
 const cors = require('cors')
 const bodyParser = require("body-parser");
-
+const fs = require("fs");
 const adminModule = new (require('./admin/admin'))();
 const {generateCertificate, parseCertificate} = require('./certificateBuilder/builder');
 
@@ -64,19 +64,13 @@ async function test(){
             country: 'BA',
             organizationName: 'Test',
             organizationalUnit: 'Test',
-            commonName: 'localhost',
+            commonName: 'clickr.app',
             localityName: 'Bijeljina',
-            stateName: 'BiH',
+            stateName: 'BA',
             email: 'stanojevic.milan97@gmail.com'
         },
         subject: {
-            country: 'SR',
-            organizationName: 'FTN',
-            organizationalUnit: 'Test',
-            commonName: 'localhost',
-            localityName: 'Novi Sad',
-            stateName: 'Serbia',
-            email: 'stanojevic.milan97@gmail.com'
+            commonName: 'clickr.app',
         },
 
         validFrom: new Date(2020, 1, 1),
@@ -98,7 +92,9 @@ async function test(){
         ]    
     });
 
-    console.log(result.certificate);
+    //console.log(result.certificate);
+    //console.log(parseCertificate(fs.readFileSync('test.cer', 'utf8')))
+    //fs.writeFileSync('test.cer', result.certificate);
     console.log(parseCertificate(result.certificate));
 }
 
