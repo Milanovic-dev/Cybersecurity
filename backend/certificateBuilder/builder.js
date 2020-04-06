@@ -28,7 +28,15 @@ function str2ab(str) {
     }
     return buf;
   }
-  
+  function buf2ab(buffer) {
+    var buf = new ArrayBuffer(buffer.length); // 2 bytes for each char
+    var bufView = new Uint8Array(buf);
+    for (var i=0, strLen=buffer.length; i < strLen; i++) {
+      bufView[i] = buffer[i];
+    }
+    return buf;
+  }
+
 
 
 
@@ -130,7 +138,7 @@ function createCertificateInternal(params) {
 
     //region Put a static values 
     certificate.version = 2;
-    certificate.serialNumber = new asn1js.Integer({ value: params.searialNumber });
+    certificate.serialNumber = new asn1js.Integer({ value: params.serialNumber });
 
     if (params.issuer) {
         for (let key in params.issuer) {
@@ -264,10 +272,13 @@ function createCertificateInternal(params) {
     //endregion
     //endregion
 
+    
+
     //region Create a new key pair 
     sequence = sequence.then(() => {
         //region Get default algorithm parameters for key generation
         const algorithm = getAlgorithmParameters(signAlg, "generatekey");
+        console.log(algorithm);
         if ("hash" in algorithm.algorithm)
             algorithm.algorithm.hash.name = hashAlg;
         //endregion
@@ -333,8 +344,8 @@ function generateCertificate(params) {
         const privateKeyString = String.fromCharCode.apply(null, new Uint8Array(result.privateKeyBuffer));
 
         return {
-            certificate: `-----BEGIN CERTIFICATE-----\r\n${formatPEM(Buffer.from(certificateString).toString('base64'))}\r\n-----END CERTIFICATE-----\r\n`,
-            privateKey: `-----BEGIN PRIVATE KEY-----\r\n${formatPEM(Buffer.from(privateKeyString).toString('base64'))}\r\n-----END PRIVATE KEY-----\r\n`
+            certificate: `-----BEGIN CERTIFICATE-----\n${formatPEM(Buffer.from(certificateString, 'ascii').toString('base64'))}\n-----END CERTIFICATE-----\n`,
+            privateKey: `-----BEGIN PRIVATE KEY-----\n${formatPEM(Buffer.from(privateKeyString, 'ascii').toString('base64'))}\n-----END PRIVATE KEY-----\n`
         }
 
     }, error => {
@@ -345,11 +356,18 @@ function generateCertificate(params) {
     });
 }
 
+function toArrayBuffer(buf) {
+    var ab = new ArrayBuffer(buf.length);
+    var view = new Uint8Array(ab);
+    for (var i = 0; i < buf.length; ++i) {
+        view[i] = buf[i];
+    }
+    return ab;
+}
 
 //*********************************************************************************
 function parseCertificate(cert) {
-    let certificateBuffer = str2ab(Buffer.from(cert.replace('-----BEGIN CERTIFICATE-----\r\n','').replace('\r\n-----END CERTIFICATE-----\r\n','').replace(/\r\n/g, ''), 'base64').toString('utf8'));
-
+    let certificateBuffer = buf2ab(Buffer.from(cert.replace('-----BEGIN CERTIFICATE-----','').replace('-----END CERTIFICATE-----','').replace(/\r/g, '').replace(/\n/g, ''), 'base64'));
     let result = {
         issuer: { },
         subject: { },
@@ -367,6 +385,7 @@ function parseCertificate(cert) {
 
     //region Decode existing X.509 certificate
     const asn1 = asn1js.fromBER(certificateBuffer);
+    console.log(asn1.result)
     const certificate = new Certificate({ schema: asn1.result });
     //endregion
 
