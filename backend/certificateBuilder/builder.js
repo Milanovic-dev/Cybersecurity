@@ -14,7 +14,11 @@ const { Certificate,
     setEngine,
     CryptoEngine,
     getAlgorithmParameters,
-    RSAPublicKey
+    RSAPublicKey,
+    InfoAccess,
+    AccessDescription,
+    GeneralName,
+    IA5String
 } = require("pkijs")
 
 const nodeSpecificCrypto = require('./node-crypto');
@@ -23,19 +27,19 @@ const webcrypto = new WebCrypto.Crypto();
 function str2ab(str) {
     var buf = new ArrayBuffer(str.length); // 2 bytes for each char
     var bufView = new Uint8Array(buf);
-    for (var i=0, strLen=str.length; i < strLen; i++) {
-      bufView[i] = str.charCodeAt(i);
+    for (var i = 0, strLen = str.length; i < strLen; i++) {
+        bufView[i] = str.charCodeAt(i);
     }
     return buf;
-  }
-  function buf2ab(buffer) {
+}
+function buf2ab(buffer) {
     var buf = new ArrayBuffer(buffer.length); // 2 bytes for each char
     var bufView = new Uint8Array(buf);
-    for (var i=0, strLen=buffer.length; i < strLen; i++) {
-      bufView[i] = buffer[i];
+    for (var i = 0, strLen = buffer.length; i < strLen; i++) {
+        bufView[i] = buffer[i];
     }
     return buf;
-  }
+}
 
 
 
@@ -104,15 +108,15 @@ const extendedKeyUsageMap = {
 }
 
 const extendedKeyUsageRevMap = {
-    "2.5.29.37.0" : "anyExtendedKeyUsage",       // anyExtendedKeyUsage
-    "1.3.6.1.5.5.7.3.1" : "serverAuth", // id-kp-serverAuth
-    "1.3.6.1.5.5.7.3.2" : "clientAuth", // id-kp-clientAuth
-    "1.3.6.1.5.5.7.3.3" : "codeSigning", // id-kp-codeSigning
-    "1.3.6.1.5.5.7.3.4" : "emailProtection", // id-kp-emailProtection
-    "1.3.6.1.5.5.7.3.8" : "timeStamping", // id-kp-timeStamping
-    "1.3.6.1.5.5.7.3.9" : "OCSPSigning", // id-kp-OCSPSigning
-    "1.3.6.1.4.1.311.10.3.1" : "MicrosoftCertificateTrustListSigning", // Microsoft Certificate Trust List signing
-    "1.3.6.1.4.1.311.10.3.4" : "MicrosoftEncryptedFileSystem"  // Microsoft Encrypted File System
+    "2.5.29.37.0": "anyExtendedKeyUsage",       // anyExtendedKeyUsage
+    "1.3.6.1.5.5.7.3.1": "serverAuth", // id-kp-serverAuth
+    "1.3.6.1.5.5.7.3.2": "clientAuth", // id-kp-clientAuth
+    "1.3.6.1.5.5.7.3.3": "codeSigning", // id-kp-codeSigning
+    "1.3.6.1.5.5.7.3.4": "emailProtection", // id-kp-emailProtection
+    "1.3.6.1.5.5.7.3.8": "timeStamping", // id-kp-timeStamping
+    "1.3.6.1.5.5.7.3.9": "OCSPSigning", // id-kp-OCSPSigning
+    "1.3.6.1.4.1.311.10.3.1": "MicrosoftCertificateTrustListSigning", // Microsoft Certificate Trust List signing
+    "1.3.6.1.4.1.311.10.3.4": "MicrosoftEncryptedFileSystem"  // Microsoft Encrypted File System
 }
 
 
@@ -219,14 +223,17 @@ function createCertificateInternal(params) {
             extnValue: extKeyUsage.toSchema().toBER(false),
             parsedValue: extKeyUsage // Parsed value for well-known extensions
         }));
-    
+
 
     }
     //endregion
 
 
+
+
+
     //region Microsoft-specific extensions
-    const certType = new asn1js.Utf8String({ value: "certType" });
+    /*const certType = new asn1js.Utf8String({ value: "certType" });
 
     certificate.extensions.push(new Extension({
         extnID: "1.3.6.1.4.1.311.20.2",
@@ -244,8 +251,37 @@ function createCertificateInternal(params) {
         extnValue: prevHash.toBER(false),
         parsedValue: prevHash // Parsed value for well-known extensions
     }));
+*/
 
-    const certificateTemplate = new CertificateTemplate({
+    // ocsp
+
+    const infoAccess = new InfoAccess({
+        accessDescriptions: [
+            new AccessDescription({
+                schema: (new AccessDescription({
+                    accessMethod: '1.3.6.1.5.5.7.48.1',
+                    accessLocation: new GeneralName({
+                        schema: (new GeneralName({
+                            type: 6,
+                            value: "http://localhost:4000"//"test"//new asn1js.Utf8String({ value: "certType" })
+                        })).toSchema()
+                    })
+                })).toSchema()
+            })]
+    });
+    //console.log(infoAccess);
+    certificate.extensions.push(new Extension({
+        extnID: "1.3.6.1.5.5.7.1.1",
+        critical: false,
+        extnValue: infoAccess.toSchema().toBER(false),
+        //parsedValue: infoAccess // Parsed value for well-known extensions
+    }));
+
+    //
+
+
+
+    /*const certificateTemplate = new CertificateTemplate({
         templateID: "1.1.1.1.1.1",
         templateMajorVersion: 10,
         templateMinorVersion: 20
@@ -268,11 +304,11 @@ function createCertificateInternal(params) {
         critical: false,
         extnValue: caVersion.toSchema().toBER(false),
         parsedValue: caVersion // Parsed value for well-known extensions
-    }));
+    }));*/
     //endregion
     //endregion
 
-    
+
 
     //region Create a new key pair 
     sequence = sequence.then(() => {
@@ -367,10 +403,10 @@ function toArrayBuffer(buf) {
 
 //*********************************************************************************
 function parseCertificate(cert) {
-    let certificateBuffer = buf2ab(Buffer.from(cert.replace('-----BEGIN CERTIFICATE-----','').replace('-----END CERTIFICATE-----','').replace(/\r/g, '').replace(/\n/g, ''), 'base64'));
+    let certificateBuffer = buf2ab(Buffer.from(cert.replace('-----BEGIN CERTIFICATE-----', '').replace('-----END CERTIFICATE-----', '').replace(/\r/g, '').replace(/\n/g, ''), 'base64'));
     let result = {
-        issuer: { },
-        subject: { },
+        issuer: {},
+        subject: {},
         extensions: []
     }
 
