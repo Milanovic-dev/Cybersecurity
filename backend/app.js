@@ -93,9 +93,9 @@ async function test(){
     });
 
     //console.log(result.certificate);
-    //console.log(parseCertificate(fs.readFileSync('test.cer', 'utf8')))
+    //console.log(parseCertificate(fs.readFileSync('google.crt', 'utf8')))
     //fs.writeFileSync('test.cer', result.certificate);
-    console.log(parseCertificate(result.certificate));
+    //console.log(parseCertificate(result.certificate));
 }
 
 test();
