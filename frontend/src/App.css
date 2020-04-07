@@ -909,3 +909,35 @@ button {
 .map-wrap {
   position: relative;
   height: 500px; }
+
+.buttons {
+  padding-left: 30%; }
+  .buttons .button-action {
+    width: 100px;
+    height: 40px;
+    padding: 5px 5px 5px 5px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #FFFFFF;
+    border-radius: 6px;
+    outline: none;
+    border: 0; }
+  .buttons .space {
+    margin-left: 10px; }
+  .buttons .preview {
+    background-color: #2196F3; }
+  .buttons .download {
+    background-color: #F1646C; }
+  .buttons .create-new {
+    background-color: #828DB1; }
+
+.tree {
+  padding-top: 3%; }
+
+.title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #555555; }
+
+.horizontal-rule {
+  background-color: #AAAAAA; }
