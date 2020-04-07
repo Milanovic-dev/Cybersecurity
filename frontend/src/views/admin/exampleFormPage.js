@@ -68,7 +68,7 @@ class ExampleFormPage extends Component {
                         </Col>
                     </Row>
                     {this.state.initialValues ?
-                        <Form initialValues={this.state.initialValues} onSubmit={this.add} /> //ClinicForm
+                        <Form initialValues={this.state.initialValues} onSubmit={this.add} />
                         :
                         <Form onSubmit={this.add} />
                     }
