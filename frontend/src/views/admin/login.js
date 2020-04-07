@@ -40,17 +40,8 @@ class LoginPage extends Component {
                         },
                     }).then((res) => res.json()).then((result) => {
 
-                        
                         localStorage.setItem('token', token);
-                        if (result.required){
-
-                            this.props[0].history.push('/admin/changePassword')
-
-                        }else{
-
-                            this.props[0].history.push('/admin/clinic');
-
-                        }
+                        this.props[0].history.push('/admin/changePassword')
                     })
                 } else {
                     this.setState({
@@ -170,7 +161,6 @@ class LoginPage extends Component {
 
         return (
             <div className="login-page">
-
                 <Container className="block-wrap">
                     <Row>
                         <Col lg="12">

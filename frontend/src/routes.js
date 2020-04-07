@@ -7,7 +7,7 @@ import {
 
 import AdminLoginPage from './views/admin/login';
 import ExampleListPage from './views/admin/exampleListPage';
-import ExampleFormPage from './views/admin/exampleFormPage';
+import AddSetificateForm from './views/admin/addSertificateForm';
 
 class Routes extends Component {
 
@@ -43,14 +43,12 @@ class Routes extends Component {
                         />
 
                         <Route
-                            path="/admin/list/:id"
+                            path="/addSertificate"
                             exact
                             render={(...renderProps) => (
-                                <ExampleFormPage {...renderProps} {...this.props} />
+                                <AddSetificateForm {...renderProps} {...this.props} />
                             )}
                         />
-
-
                     </Switch>
                 </div>
             </Router >

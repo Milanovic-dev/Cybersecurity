@@ -10,10 +10,8 @@ const required = value => value ? undefined : "Required"
 
 const form = (props) => {
     const { handleSubmit, pristine, submitting } = props;
-    console.log(pristine, submitting);
 
     return (
-
         <form onSubmit={handleSubmit}>
             <Row>
                 <Col lg="12" className="input-wrap">
