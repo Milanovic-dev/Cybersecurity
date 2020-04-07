@@ -11,7 +11,7 @@ class Check extends Component {
         return (
             <div className="checkbox-wrap" onClick={() => this.props.onChange(!this.props.value)} >
                 <div className={this.props.value ? "checkbox checked" : "checkbox"}></div>
-                {this.props.label ? <span className="checkbox-label">Remember me</span> : null}
+                {this.props.label ? <span className="checkbox-label">{this.props.label}</span> : null}
             </div>
         );
     }
