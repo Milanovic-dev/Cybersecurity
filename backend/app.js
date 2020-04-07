@@ -11,15 +11,14 @@ const isAdminAuthenticated = require('./admin/auth');
 
 const exampleModule = new (require('./example/example'))();
 
-
 const app = express();
 app.use(cors());
 app.use(bodyParser.json({ limit: '20mb' }));
 app.use('/uploads', express.static('uploads'))
 const server = http.createServer(app);
 
+const api = require('./api/certificateApi') (app);
 server.listen(port, () => console.log(`Listening on port ${port}`));
-
 
 /*
     ADMIN API ROUTES
@@ -55,9 +54,13 @@ app.get('/example/query', async (req, res) => {
     res.status(200).send(await exampleModule.query());
 });
 
+app.get('/certificate/test', async (req, res) => {
+    let cert = await getCertificateTest();
+    res.status(200).send(parseCertificate(cert.certificate));
+});
 
 
-async function test(){
+async function getCertificateTest(){
     let result = await generateCertificate({
         serialNumber: 1,
         issuer: {
@@ -97,12 +100,7 @@ async function test(){
             "MicrosoftEncryptedFileSystem"
         ]    
     });
-
-    console.log(result.certificate);
-    console.log(parseCertificate(result.certificate));
+    return result;
 }
-
-test();
-
 
 export default app;
