@@ -33,6 +33,8 @@ const store = async ({certificate, privateKey}, parentId) => {
         'commonName': certObj.issuer.commonName,
         'parent': parentId,
     });
+
+    console.log(result.insertedId);
 }
 
 /**
@@ -57,12 +59,12 @@ const fetch = async (id) => {
 }
 
 const fetchTree = async (fromRoot) => {
-    let nodes = await db.collection('certificates').find({parent: fromRoot}).sort({_id:-1}).toArray();
-
+    let nodes = await db.collection('certificates').find({"parent" : fromRoot}).sort({_id:-1}).toArray();
+    
     for(let i = 0 ; i < nodes.length ; i++){
         let id = nodes[i]._id;
         nodes[i] = fetchFromFiles(nodes[i]);
-        nodes[i].children = await fetchTree(id);
+        nodes[i].children = await fetchTree(nodes[i].id.toString());
     }
 
     return nodes;
@@ -96,28 +98,27 @@ const fetchFromFiles = (dbCertificateObject) => {
     };
 };
 
-const remove = async (id) =>{
-    if(id.length != 24){
-        return {errorStatus: 400}
+const drop = async () =>{
+    let certificates = await db.collection('certificates').find({}).toArray();
+
+    for(let i = 0 ; i < certificates.length ; i++){
+        try{
+            if(fs.existsSync(certificates[i].certPath))
+            fs.unlinkSync(certificates[i].certPath);
+
+            if(fs.existsSync(certificates[i].pkPath))
+            fs.unlinkSync(certificates[i].pkPath);
+
+        }
+        catch(err){
+            console.error(err);
+        }
     }
-
-    let dbCertificateObject = await db.collection('certificates').findOne({
-        _id: ObjectID(id)
-    });
-
     try{
-        fs.unlinkSync(dbCertificateObject.certPath);
-        fs.unlinkSync(dbCertificateObject.pkPath);
-
-        db.collection('certificates').deleteOne({
-            _id : dbCertificateObject._id
-        });
-
-        return dbCertificateObject;
-
-    }catch(err){
-        console.error(err);
-        return {errorStatus: 500}
+        await db.collection('certificates').drop();
+    }
+    catch(err){
+        console.warn(err);
     }
 }
 
@@ -125,7 +126,7 @@ const CertificateStore = {
     storeAsync: store,
     fetchAsync: fetch,
     fetchTreeAsync: fetchTree,
-    removeAsync: remove
+    dropAsync: drop,
 }
 
 export default CertificateStore;
