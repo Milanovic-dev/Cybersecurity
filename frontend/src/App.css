@@ -941,3 +941,77 @@ button {
 
 .horizontal-rule {
   background-color: #AAAAAA; }
+
+.date-time-picker-wrap {
+  height: 54px;
+  border-radius: 6px;
+  outline: none;
+  border: 1px solid #D9D9D9;
+  background-color: #FFFFFF;
+  font-size: 16px;
+  font-weight: 400;
+  padding: 0;
+  width: 100%;
+  display: flex;
+  position: relative; }
+  .date-time-picker-wrap .rdrCalendarWrapper {
+    position: absolute;
+    top: 100%;
+    z-index: 9999;
+    -webkit-box-shadow: 0px 6px 10px 0px rgba(0, 0, 0, 0.1);
+    -moz-box-shadow: 0px 6px 10px 0px rgba(0, 0, 0, 0.1);
+    box-shadow: 0px 6px 10px 0px rgba(0, 0, 0, 0.1); }
+  .date-time-picker-wrap > button {
+    background-color: #F5F5F5;
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+    border: 0;
+    padding: 10px;
+    height: 100%;
+    margin-right: 15px; }
+    .date-time-picker-wrap > button svg {
+      stroke: #555555; }
+  .date-time-picker-wrap .save-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+    margin-right: 0;
+    border-top-left-radius: 0px;
+    border-bottom-left-radius: 0px;
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+    padding: 10px 30px; }
+    .date-time-picker-wrap .save-button::after {
+      content: ' ';
+      display: block;
+      width: 8px;
+      height: 14px;
+      border-right: 2px solid #2196F3;
+      border-bottom: 2px solid #2196F3;
+      transform: rotate(45deg); }
+  .date-time-picker-wrap input {
+    border: 0;
+    height: 100%; }
+    .date-time-picker-wrap input:focus {
+      border-bottom: 2px solid #2196F3;
+      outline: none; }
+  .date-time-picker-wrap span {
+    font-weight: 600;
+    margin: 0 3px; }
+  .date-time-picker-wrap .date-input {
+    display: flex;
+    align-items: center; }
+    .date-time-picker-wrap .date-input input {
+      text-align: left; }
+    .date-time-picker-wrap .date-input .digit2 {
+      width: 28px; }
+    .date-time-picker-wrap .date-input .digit4 {
+      width: 70px; }
+  .date-time-picker-wrap .time-input {
+    display: flex;
+    align-items: center; }
+    .date-time-picker-wrap .time-input input {
+      text-align: left; }
+    .date-time-picker-wrap .time-input .digit2 {
+      width: 32px; }
