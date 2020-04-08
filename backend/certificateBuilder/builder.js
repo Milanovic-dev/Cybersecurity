@@ -1,5 +1,5 @@
 const WebCrypto = require('node-webcrypto-ossl');
-import { stringToArrayBuffer, arrayBufferToString, fromBase64, toBase64, bufferToHexCodes } from "pvutils";
+import { bufferToHexCodes } from "pvutils";
 
 const asn1js = require("asn1js");
 
@@ -18,20 +18,12 @@ const { Certificate,
     InfoAccess,
     AccessDescription,
     GeneralName,
-    IA5String
+    AuthorityKeyIdentifier
 } = require("pkijs")
 
 const nodeSpecificCrypto = require('./node-crypto');
 const webcrypto = new WebCrypto.Crypto();
 
-function str2ab(str) {
-    var buf = new ArrayBuffer(str.length); // 2 bytes for each char
-    var bufView = new Uint8Array(buf);
-    for (var i = 0, strLen = str.length; i < strLen; i++) {
-        bufView[i] = str.charCodeAt(i);
-    }
-    return buf;
-}
 function buf2ab(buffer) {
     var buf = new ArrayBuffer(buffer.length); // 2 bytes for each char
     var bufView = new Uint8Array(buf);
@@ -39,6 +31,14 @@ function buf2ab(buffer) {
         bufView[i] = buffer[i];
     }
     return buf;
+}
+
+function hexStringToArrayBuffer(string) {
+    let buffer = [];
+    for (let i = 0; i < string.length; i += 2) {
+        buffer.push(parseInt(`${string[i]}${string[i + 1]}`, 16));
+    }
+    return buf2ab(buffer);
 }
 
 
@@ -61,6 +61,24 @@ function formatPEM(pemString) {
     }
 
     return resultString;
+}
+
+
+function importPrivateKey(cert) {
+    return new Promise(function (resolve) {
+        const crypto = getCrypto();
+        var importer = crypto.subtle.importKey("pkcs8", buf2ab(Buffer.from(cert.replace('-----BEGIN PRIVATE KEY-----', '').replace('-----BEGIN PRIVATE KEY-----', '').replace(/\r/g, '').replace(/\n/g, ''), 'base64')), {
+            name: "RSASSA-PKCS1-v1_5",
+            hash: {
+                name: "SHA-256"
+            },
+            modulusLength: 2048,
+            publicExponent: new Uint8Array([1, 0, 1])
+        }, true, ["sign"])
+        importer.then(function (key) {
+            resolve(key)
+        })
+    })
 }
 
 
@@ -120,7 +138,7 @@ const extendedKeyUsageRevMap = {
 }
 
 
-function createCertificateInternal(params) {
+function createCertificateInternal(params, parentCertificate, caPrivateKey) {
     //region Initial variables 
     let sequence = Promise.resolve();
 
@@ -144,7 +162,7 @@ function createCertificateInternal(params) {
     certificate.version = 2;
     certificate.serialNumber = new asn1js.Integer({ value: params.serialNumber });
 
-    if (params.issuer) {
+    if (params.issuer && !parentCertificate) {
         for (let key in params.issuer) {
             if (params.issuer.hasOwnProperty(key)) {
                 certificate.issuer.typesAndValues.push(new AttributeTypeAndValue({
@@ -155,6 +173,16 @@ function createCertificateInternal(params) {
             }
         }
 
+    } else if (parentCertificate) {
+        for (let key in parentCertificate.subject) {
+            if (parentCertificate.subject.hasOwnProperty(key)) {
+                certificate.issuer.typesAndValues.push(new AttributeTypeAndValue({
+                    type: issuerTypesMap[key],
+                    value: new asn1js.PrintableString({ value: parentCertificate.subject[key] })
+                }));
+
+            }
+        }
     }
 
     if (params.subject) {
@@ -167,7 +195,6 @@ function createCertificateInternal(params) {
 
             }
         }
-
     }
 
 
@@ -228,31 +255,6 @@ function createCertificateInternal(params) {
     }
     //endregion
 
-
-
-
-
-    //region Microsoft-specific extensions
-    /*const certType = new asn1js.Utf8String({ value: "certType" });
-
-    certificate.extensions.push(new Extension({
-        extnID: "1.3.6.1.4.1.311.20.2",
-        critical: false,
-        extnValue: certType.toBER(false),
-        parsedValue: certType // Parsed value for well-known extensions
-    }));
-
-
-    const prevHash = new asn1js.OctetString({ valueHex: (new Uint8Array([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])).buffer });
-
-    certificate.extensions.push(new Extension({
-        extnID: "1.3.6.1.4.1.311.21.2",
-        critical: false,
-        extnValue: prevHash.toBER(false),
-        parsedValue: prevHash // Parsed value for well-known extensions
-    }));
-*/
-
     // ocsp
 
     const infoAccess = new InfoAccess({
@@ -279,45 +281,15 @@ function createCertificateInternal(params) {
 
     //
 
-
-
-    /*const certificateTemplate = new CertificateTemplate({
-        templateID: "1.1.1.1.1.1",
-        templateMajorVersion: 10,
-        templateMinorVersion: 20
-    });
-
-    certificate.extensions.push(new Extension({
-        extnID: "1.3.6.1.4.1.311.21.7",
-        critical: false,
-        extnValue: certificateTemplate.toSchema().toBER(false),
-        parsedValue: certificateTemplate // Parsed value for well-known extensions
-    }));
-
-    const caVersion = new CAVersion({
-        certificateIndex: 10,
-        keyIndex: 20
-    });
-
-    certificate.extensions.push(new Extension({
-        extnID: "1.3.6.1.4.1.311.21.1",
-        critical: false,
-        extnValue: caVersion.toSchema().toBER(false),
-        parsedValue: caVersion // Parsed value for well-known extensions
-    }));*/
-    //endregion
-    //endregion
-
-
-
     //region Create a new key pair 
     sequence = sequence.then(() => {
         //region Get default algorithm parameters for key generation
         const algorithm = getAlgorithmParameters(signAlg, "generatekey");
-        console.log(algorithm);
+        //console.log(algorithm);
         if ("hash" in algorithm.algorithm)
             algorithm.algorithm.hash.name = hashAlg;
         //endregion
+
 
         return crypto.generateKey(algorithm.algorithm, true, algorithm.usages);
     });
@@ -331,21 +303,48 @@ function createCertificateInternal(params) {
     //endregion 
 
     //region Exporting public key into "subjectPublicKeyInfo" value of certificate 
-    sequence = sequence.then(() =>
+    sequence = sequence.then(() => 
         certificate.subjectPublicKeyInfo.importKey(publicKey)
     );
     //endregion 
 
+
     //region Signing final certificate 
     sequence = sequence.then(() =>
-        certificate.sign(privateKey, hashAlg),
+        certificate.sign(caPrivateKey ? caPrivateKey : privateKey, hashAlg),
         error => Promise.reject(`Error during exporting public key: ${error}`));
     //endregion 
+    sequence = sequence.then(() =>
+        crypto.digest({ name: "SHA-1" }, certificate.subjectPublicKeyInfo.subjectPublicKey.valueBlock.valueHex),
+        error => Promise.reject(`Error during exporting public key: ${error}`));
+
+    sequence = sequence.then((result) => {
+        var keyIDExtension = new Extension({
+            extnID: "2.5.29.14",
+            critical: false,
+            extnValue: new asn1js.OctetString({ valueHex: result }).toBER(false)
+        });
+
+        var issuerKeyIDExtension = new Extension({
+            extnID: "2.5.29.35",
+            critical: false,
+            extnValue: new AuthorityKeyIdentifier({
+                keyIdentifier: new asn1js.OctetString({ valueHex: parentCertificate ? hexStringToArrayBuffer(parentCertificate.extensions['2.5.29.14'].value) : result })
+            }).toSchema().toBER(false)
+        });
+
+        certificate.extensions.push(keyIDExtension);
+        certificate.extensions.push(issuerKeyIDExtension);
+
+    },
+        error => Promise.reject(`Error during exporting public key: ${error}`));
+
 
     //region Encode and store certificate 
     sequence = sequence.then(() => {
         trustedCertificates.push(certificate);
         certificateBuffer = certificate.toSchema(true).toBER(false);
+
     }, error => Promise.reject(`Error during signing: ${error}`));
     //endregion 
 
@@ -374,40 +373,83 @@ function createCertificateInternal(params) {
 
 
 
-function generateCertificate(params) {
-    return createCertificateInternal(params).then((result) => {
-        const certificateString = String.fromCharCode.apply(null, new Uint8Array(result.certificateBuffer));
-        const privateKeyString = String.fromCharCode.apply(null, new Uint8Array(result.privateKeyBuffer));
+function generateCertificate(params, parentCertificate, parentPrivateKey) {
+    let parsedParentCertificate;
+    if (parentCertificate) {
+        parsedParentCertificate = parseCertificate(parentCertificate);
+        return importPrivateKey(parentPrivateKey).then((privateKey) => {
+            return createCertificateInternal(params, parsedParentCertificate, privateKey).then((result) => {
 
-        return {
-            certificate: `-----BEGIN CERTIFICATE-----\n${formatPEM(Buffer.from(certificateString, 'ascii').toString('base64'))}\n-----END CERTIFICATE-----\n`,
-            privateKey: `-----BEGIN PRIVATE KEY-----\n${formatPEM(Buffer.from(privateKeyString, 'ascii').toString('base64'))}\n-----END PRIVATE KEY-----\n`
-        }
 
-    }, error => {
-        if (error instanceof Object)
-            console.log(error.message);
-        else
-            console.log(error);
-    });
-}
+                const certificateString = String.fromCharCode.apply(null, new Uint8Array(result.certificateBuffer));
+                const privateKeyString = String.fromCharCode.apply(null, new Uint8Array(result.privateKeyBuffer));
 
-function toArrayBuffer(buf) {
-    var ab = new ArrayBuffer(buf.length);
-    var view = new Uint8Array(ab);
-    for (var i = 0; i < buf.length; ++i) {
-        view[i] = buf[i];
+                return {
+                    certificate: `-----BEGIN CERTIFICATE-----\n${formatPEM(Buffer.from(certificateString, 'ascii').toString('base64'))}\n-----END CERTIFICATE-----\n`,
+                    privateKey: `-----BEGIN PRIVATE KEY-----\n${formatPEM(Buffer.from(privateKeyString, 'ascii').toString('base64'))}\n-----END PRIVATE KEY-----\n`
+                }
+
+            }, error => {
+                if (error instanceof Object)
+                    console.log(error.message);
+                else
+                    console.log(error);
+            });
+
+        })
+    } else {
+        return createCertificateInternal(params).then((result) => {
+
+
+            const certificateString = String.fromCharCode.apply(null, new Uint8Array(result.certificateBuffer));
+            const privateKeyString = String.fromCharCode.apply(null, new Uint8Array(result.privateKeyBuffer));
+
+            return {
+                certificate: `-----BEGIN CERTIFICATE-----\n${formatPEM(Buffer.from(certificateString, 'ascii').toString('base64'))}\n-----END CERTIFICATE-----\n`,
+                privateKey: `-----BEGIN PRIVATE KEY-----\n${formatPEM(Buffer.from(privateKeyString, 'ascii').toString('base64'))}\n-----END PRIVATE KEY-----\n`
+            }
+
+        }, error => {
+            if (error instanceof Object)
+                console.log(error.message);
+            else
+                console.log(error);
+        });
+
+
     }
-    return ab;
+
+
+
 }
 
-//*********************************************************************************
+function getPublicKey(cert) {
+    let certificateBuffer = buf2ab(Buffer.from(cert.replace('-----BEGIN CERTIFICATE-----', '').replace('-----END CERTIFICATE-----', '').replace(/\r/g, '').replace(/\n/g, ''), 'base64'));
+    //region Initial check
+    if (certificateBuffer.byteLength === 0) {
+        console.log("Nothing to parse!");
+        return;
+    }
+    //endregion
+
+    //region Decode existing X.509 certificate
+    const asn1 = asn1js.fromBER(certificateBuffer);
+    //console.log(asn1.result)
+    const certificate = new Certificate({ schema: asn1.result });
+    //endregion
+
+    return certificate.getPublicKey().then((res) => res);
+    //endregion
+}
+
+
+
 function parseCertificate(cert) {
     let certificateBuffer = buf2ab(Buffer.from(cert.replace('-----BEGIN CERTIFICATE-----', '').replace('-----END CERTIFICATE-----', '').replace(/\r/g, '').replace(/\n/g, ''), 'base64'));
     let result = {
         issuer: {},
         subject: {},
-        extensions: []
+        extensions: {}
     }
 
     //region Initial check
@@ -418,10 +460,11 @@ function parseCertificate(cert) {
     //endregion
 
 
+    const crypto = getCrypto();
 
     //region Decode existing X.509 certificate
     const asn1 = asn1js.fromBER(certificateBuffer);
-    console.log(asn1.result)
+    //console.log(asn1.result)
     const certificate = new Certificate({ schema: asn1.result });
     //endregion
 
@@ -469,7 +512,6 @@ function parseCertificate(cert) {
     if (certificate.subjectPublicKeyInfo.algorithm.algorithmId.indexOf("1.2.840.113549") !== (-1)) {
         const asn1PublicKey = asn1js.fromBER(certificate.subjectPublicKeyInfo.subjectPublicKey.valueBlock.valueHex);
         const rsaPublicKey = new RSAPublicKey({ schema: asn1PublicKey.result });
-
         const modulusView = new Uint8Array(rsaPublicKey.modulus.valueBlock.valueHex);
         let modulusBitLength = 0;
 
@@ -480,6 +522,7 @@ function parseCertificate(cert) {
 
         publicKeySize = modulusBitLength.toString();
     }
+
 
     result.publicKeySize = publicKeySize;
 
@@ -511,28 +554,76 @@ function parseCertificate(cert) {
 
     //region Put information about certificate extensions
     if ("extensions" in certificate) {
+        //console.log(certificate.extensions[0].toJSON())
         for (let i = 0; i < certificate.extensions.length; i++) {
-            result.extensions.push(certificate.extensions[i].extnID);
+            if (certificate.extensions[i].extnID == "2.5.29.35") {
+                const authKeyIdentifier = new AuthorityKeyIdentifier({ schema: asn1js.fromBER(certificate.extensions[i].extnValue.valueBlock.valueHex).result });
+
+                result.extensions[certificate.extensions[i].extnID] = {
+                    extnID: certificate.extensions[i].extnID,
+                    name: "Authority Key Identifier",
+                    value: {
+                        keyIdentifier: bufferToHexCodes(authKeyIdentifier.keyIdentifier.valueBlock.valueHex)
+                    }
+                };
+            } else if (certificate.extensions[i].extnID == "2.5.29.14") {
+                result.extensions[certificate.extensions[i].extnID] = {
+                    extnID: certificate.extensions[i].extnID,
+                    name: "Subject Key Identifier",
+                    value: bufferToHexCodes(asn1js.fromBER(certificate.extensions[i].extnValue.valueBlock.valueHex).result.valueBlock.valueHex)
+
+                };
+            } else if (certificate.extensions[i].extnID == "1.3.6.1.5.5.7.1.1") {
+                const infoAccess = new InfoAccess({ schema: asn1js.fromBER(certificate.extensions[i].extnValue.valueBlock.valueHex).result });
+                result.extensions[certificate.extensions[i].extnID] = {
+                    extnID: certificate.extensions[i].extnID,
+                    name: "Authority Information Access",
+                    value: infoAccess.accessDescriptions.map((item) => {
+                        return {
+                            accessMethod: item.accessMethod,
+                            accessLocation: item.accessLocation
+                        }
+                    })
+                };
+
+            } else if (certificate.extensions[i].extnID == "2.5.29.19") {
+                const basicConstraints = new BasicConstraints({ schema: asn1js.fromBER(certificate.extensions[i].extnValue.valueBlock.valueHex).result }).toJSON();
+                //console.log(basicConstraints.toJSON());
+                result.extensions[certificate.extensions[i].extnID] = {
+                    extnID: certificate.extensions[i].extnID,
+                    name: "Basic Constraints",
+                    value: {
+                        isCA: basicConstraints.cA,
+                        pathLengthConstraint: basicConstraints.pathLenConstraint
+                    }
+                };
+
+            } else if (certificate.extensions[i].extnID == "2.5.29.37") {
+                const extKeyUsage = new ExtKeyUsage({ schema: asn1js.fromBER(certificate.extensions[i].extnValue.valueBlock.valueHex).result }).toJSON();
+                result.extensions[certificate.extensions[i].extnID] = {
+                    extnID: certificate.extensions[i].extnID,
+                    name: "Extended Key Usage",
+                    value: extKeyUsage.keyPurposes.map((item) => extendedKeyUsageRevMap[item])
+                };
+
+            } else {
+                result.extensions[certificate.extensions[i].extnID] = {
+                    name: "",
+                    extnID: certificate.extensions[i].extnID,
+                    value: null
+                }
+            }
         }
 
     }
-
-    if ("extendedKeyUsage" in certificate) {
-        for (let i = 0; i < certificate.extendedKeyUsage.length; i++) {
-            result.extendedKeyUsage.push(extendedKeyUsageRevMap[certificate.extensions[i].extnID]);
-        }
-
-    }
-
 
     return result;
     //endregion
 }
-
-//console.log(createCertificate());
 
 
 module.exports = {
     generateCertificate: generateCertificate,
     parseCertificate: parseCertificate
 }
+
