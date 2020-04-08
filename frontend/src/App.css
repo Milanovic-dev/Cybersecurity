@@ -664,6 +664,8 @@ button {
     margin: 0;
     font-size: 15px;
     font-weight: 300;
+    color: #555555; }
+  .form-box .black {
     color: black; }
 
 .checkbox-wrap {

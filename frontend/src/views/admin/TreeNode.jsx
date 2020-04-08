@@ -7,14 +7,16 @@ const TreeNode = styled.div`
     cursor: default;
     position: relative;
     line-height: ${({ rowHeight = defaultRowHeight }) => rowHeight - 2}px;
-    background: ${props => props.selected ? '#deecfd' : 'transparent'};
-    border: ${props => props.selected ? '1px solid #06c' : '1px solid transparent'};
+    background: ${props => props.selected ? '#transparent' : 'transparent'};
+    border: ${props => props.selected ? '1px solid transparent' : '1px solid transparent'};
+    font-weight: ${props => props.selected ? '700' : '300'};
+    font-size: ${props => props.selected ? '20px' : '17px'};
     padding-left: ${props => props.depth * 18}px;
     .dropdown {
         visibility: hidden;
     }
     &:hover {
-        background: #f2fdff;
+        background: #FFFFFF;
         .dropdown {
             visibility: inherit;
         }

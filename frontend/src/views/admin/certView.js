@@ -19,7 +19,22 @@ class CertView extends Component {
         }
     }
     componentDidMount() {
-    
+        console.log(this.props[0].match.params.id);
+
+        fetch('http://127.0.0.1:4000/certificate/get/' + this.props[0].match.params.id, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer` // ${localStorage.getItem('token')}`
+            },
+        }).then((res) => res.json()).then((result) => {
+            console.log("rez: "); 
+            console.log(result);
+            this.setState({
+                initialValues: result
+            })
+        })
+
         let obj = {
             "issuer": {
                 "country": "BA",
@@ -100,9 +115,9 @@ class CertView extends Component {
             "signatureAlgorithm": "SHA256 with RSA (1.2.840.113549.1.1.11)"
         }
 
-        this.setState({
-            initialValues: obj
-        });
+        // this.setState({
+        //     initialValues: obj
+        // });
 
 
     }
