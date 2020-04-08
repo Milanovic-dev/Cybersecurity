@@ -15,7 +15,6 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json({ limit: '20mb' }));
 app.use('/uploads', express.static('uploads'))
-app.use(logger);
 const server = http.createServer(app);
 
 const api = require('./api/certificateApi') (app);
