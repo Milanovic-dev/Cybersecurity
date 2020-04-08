@@ -3,6 +3,8 @@ import Text from './text';
 import Image from './image';
 import Select from './select';
 import Check from './check';
+import DateTime from './date_picker';
+import Option from './2letters_option';
 
 
 
@@ -66,3 +68,39 @@ import Check from './check';
               {children}
           </Select>
     )
+
+    export const renderDateTimeField = ({
+      input,
+      placeholder,
+      label,
+      meta: { touched, error },
+      }) => (
+  
+          <DateTime
+              placeholder={placeholder}
+              label={label}
+              errorText={touched && error}
+              error={touched && error}
+  
+              {...input}
+          />
+      )
+
+      
+    export const render2letterOption = ({
+      input,
+      placeholder,
+      label,
+      meta: { touched, error },
+      }) => (
+  
+          <Option
+              placeholder={placeholder}
+              label={label}
+              errorText={touched && error}
+              error={touched && error}
+  
+              {...input}
+          />
+      )
+

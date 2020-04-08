@@ -10,6 +10,7 @@ import ExampleListPage from './views/admin/exampleListPage';
 import ExampleFormPage from './views/admin/exampleFormPage';
 import Tree from './views/admin/tree';
 import CertView from './views/admin/certView'
+import AddSetificateForm from './views/admin/addSertificateForm';
 
 
 class Routes extends Component {
@@ -46,10 +47,10 @@ class Routes extends Component {
                         />
 
                         <Route
-                            path="/admin/list/:id"
+                            path="/addSertificate"
                             exact
                             render={(...renderProps) => (
-                                <ExampleFormPage {...renderProps} {...this.props} />
+                                <AddSetificateForm {...renderProps} {...this.props} />
                             )}
                         />
                         <Route
@@ -67,8 +68,6 @@ class Routes extends Component {
                             )}
                         />
                         
-
-
                     </Switch>
                 </div>
             </Router >
