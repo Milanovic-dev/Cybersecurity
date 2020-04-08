@@ -622,6 +622,16 @@ button {
     font-weight: 300;
     color: #AAAAAA;
     margin-bottom: 30px; }
+  .form-box .subtitle-cert {
+    font-size: 15px;
+    font-weight: 500;
+    color: black;
+    margin-bottom: 30px; }
+  .form-box .space-top {
+    margin: 0;
+    margin-top: 2%; }
+  .form-box .space-bottom {
+    margin-bottom: 2%; }
   .form-box .button {
     margin-bottom: 10px; }
   .form-box .input-wrap label {
@@ -650,6 +660,11 @@ button {
     background-color: transparent;
     border: 0;
     float: right; }
+  .form-box p {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 300;
+    color: black; }
 
 .checkbox-wrap {
   display: flex;
@@ -929,7 +944,7 @@ button {
   .buttons .download {
     background-color: #F1646C; }
   .buttons .create-new {
-    background-color: #828DB1; }
+    background-color: #3CB371; }
 
 .tree {
   padding-top: 3%; }
