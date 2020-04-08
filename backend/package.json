@@ -25,7 +25,7 @@
     "pkijs": "^2.1.87",
     "pvutils": "^1.0.17",
     "selenium-webdriver": "^4.0.0-alpha.5",
-    "uuid": "^3.3.3"
+    "uuid": "^3.4.0"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
