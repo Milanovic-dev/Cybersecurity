@@ -19,7 +19,6 @@ button{
 }
 
 
-
 .input-wrap{
     margin-bottom: 20px;
 
@@ -504,6 +503,45 @@ button{
     height: 500px;;
 }
 
+.buttons{
+    padding-left: 30%;
+    .button-action{
+        width: 100px;
+        height: 40px;
+        padding: 5px 5px 5px 5px;
+        font-size: 15px;
+        font-weight: $semiBold;
+        color: $white;
+        border-radius: 6px;
+        outline: none;
+        border: 0;
+    }
+    .space{
+        margin-left: 10px;
+    }
+    .preview{
+        background-color: $blue;
+    }
+    .download{
+        background-color: $red;
+    }
+    .create-new{
+        background-color: $blueGray;
+    }
+}
+.tree{
+    padding-top: 3%;
+    
+}
+.title{
+    font-size: 20px;
+    font-weight: $semiBold;
+    color: $black;
+}
+.horizontal-rule{
+    background-color: $darkGray;
+
+
 .date-time-picker-wrap{
     height: 54px;
     border-radius: 6px;
@@ -608,6 +646,4 @@ button{
         }
 
     }
-
-
 }

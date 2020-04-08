@@ -7,7 +7,11 @@ import {
 
 import AdminLoginPage from './views/admin/login';
 import ExampleListPage from './views/admin/exampleListPage';
+import ExampleFormPage from './views/admin/exampleFormPage';
+import Tree from './views/admin/tree';
+import CertView from './views/admin/certView'
 import AddSetificateForm from './views/admin/addSertificateForm';
+
 
 class Routes extends Component {
 
@@ -49,6 +53,21 @@ class Routes extends Component {
                                 <AddSetificateForm {...renderProps} {...this.props} />
                             )}
                         />
+                        <Route
+                            path="/tree"
+                            exact
+                            render={(...renderProps) => (
+                                <Tree {...renderProps} {...this.props} />
+                            )}
+                        />
+                        <Route
+                            path="/certificate/:id"
+                            exact
+                            render={(...renderProps) => (
+                                <CertView {...renderProps} {...this.props} />
+                            )}
+                        />
+                        
                     </Switch>
                 </div>
             </Router >
