@@ -18,18 +18,18 @@ class Sidebar extends Component {
         return (
             <div className={this.state._show ? `sidebar` : 'sidebar sidebar-hidden'}>
                 <div className="items">
-                    <h6>ITEMS</h6>
+                    <h6>Admin</h6>
                     <ul>
                         <li>
                             <Link to='/admin/list' className={this.props[0].location.pathname === '/admin/list' ? 'active' : null}>
                                 <Isvg src={list} />
-                                All items
+                                All certificates
                             </Link>
                         </li>
                         <li>
                             <Link to='/admin/list/new' className={this.props[0].location.pathname === '/admin/list/new' ? 'active' : null}>
                                 <Isvg src={add} />
-                                Create
+                                Create new sertificate
                             </Link>
                         </li>
                     </ul>
@@ -37,7 +37,7 @@ class Sidebar extends Component {
                         <li id="logout" onClick={() => { localStorage.removeItem('token'); localStorage.removeItem('clinicAdminToken'); localStorage.removeItem('clinicUserToken'); localStorage.removeItem('patientToken'); }}>
                             <Link to='/login' id="logout-link" >
                                 <Isvg src={exit} />
-                                Odjavi se
+                                Log out
                             </Link>
                         </li>
                     </ul>
