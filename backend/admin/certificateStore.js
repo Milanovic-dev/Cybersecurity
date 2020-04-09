@@ -21,20 +21,34 @@ const store = async ({certificate, privateKey}, parentId) => {
     let cert_path = 'certificates/'+ certUuid + '.cert';
     let pk_path = 'privateKeys/'+ pkUuid + '.pk'
 
-    fs.writeFileSync(cert_path, JSON.stringify(certificate));
-    fs.writeFileSync(pk_path, JSON.stringify(privateKey));
+    if(!fs.existsSync('certificates')){
+        fs.mkdir('certificates');
+    }
+
+    if(!fs.existsSync('privateKeys')){
+        fs.mkdir('privateKeys');
+    }
+
+    try{
+        fs.writeFileSync(cert_path, JSON.stringify(certificate));
+        fs.writeFileSync(pk_path, JSON.stringify(privateKey));
+        
+        let certObj = parseCertificate(certificate);
     
-    let certObj = parseCertificate(certificate);
+        let result = await db.collection('certificates').insertOne({
+            'certPath': cert_path,
+            'pkPath': pk_path,
+            'serialNumber': certObj.serialNumber,
+            'commonName': certObj.issuer.commonName,
+            'parent': parentId,
+        });
+        console.log(result.insertedId);
+        return {status: 200, response: result.insertedId};
+    } catch(err){
+        console.error(err);
+        return {status: 500};
+    }
 
-    let result = await db.collection('certificates').insertOne({
-        'certPath': cert_path,
-        'pkPath': pk_path,
-        'serialNumber': certObj.serialNumber,
-        'commonName': certObj.issuer.commonName,
-        'parent': parentId,
-    });
-
-    console.log(result.insertedId);
 }
 
 /**
@@ -95,6 +109,7 @@ const fetchFromFiles = (dbCertificateObject) => {
         parsedCertificate: parseCertificate(certificate), 
         certificate: certificate,
         privateKey: privateKey, 
+        parent: dbCertificateObject.parent
     };
 };
 
@@ -122,11 +137,38 @@ const drop = async () =>{
     }
 }
 
+const fetchRoots = async () => {
+    let nodes = await db.collection('certificates').find({"parent" : null}).sort({_id:-1}).toArray();
+
+    for(let i = 0 ; i < nodes.length ; i++){
+        nodes[i] = fetchFromFiles(nodes[i]);
+    }
+
+    return nodes;
+}
+
+const fetchUpToRoot = async (childId) => {
+    let current = await db.collection('certificates').findOne({"_id": ObjectID(childId)});
+
+    let parent = current.parent;
+    let ret = [fetchFromFiles(current)];
+
+    while(parent != null){
+        current = await db.collection('certificates').findOne({"_id": ObjectID(parent)});
+        ret.push(fetchFromFiles(current));
+        parent = current.parent;
+    }
+
+    return ret;
+}
+
 const CertificateStore = {
     storeAsync: store,
     fetchAsync: fetch,
     fetchTreeAsync: fetchTree,
     dropAsync: drop,
+    fetchRootsAsync: fetchRoots,
+    fetchUpToRootAsync: fetchUpToRoot
 }
 
 export default CertificateStore;

@@ -1,7 +1,7 @@
 import CertificateStore from '../admin/certificateStore';
+import CertificateService from '../admin/certificateService';
 const {generateCertificate} = require('../certificateBuilder/builder');
 let fs = require('fs');
-import Moment from 'moment';
 
 
 
@@ -18,51 +18,41 @@ dbConnect()
         console.log('DB error')
     })
 
+    app.post('/certificate/createRoot', async (req, res) => {
+        let result = await CertificateService.createCertificateAsync(req.body, null);
+        res.status(result.status).send(result.response);
+    });
 
     //POST
     app.post('/certificate/create/:parentId', async (req, res) => {
-        let reqBody = req.body;
-
-        if(reqBody == undefined){
-            res.status(400).send();
-        }
-        reqBody.validFrom= new Date(2020, 1, 1);
-        reqBody.validTo= new Date(2021, 1, 1);
-        //reqBody.validForm = Moment.unix(reqBody.validForm).toDate();
-        //reqBody.validTo = Moment.unix(reqBody.validTo).toDate();
-
-        let result = await generateCertificate(reqBody);
-        await CertificateStore.storeAsync(result, req.params.parentId);
-        res.status(200).send();
+        let result = await CertificateService.createCertificateAsync(req.body, req.params.parentId);
+        res.status(result.status).send(result.response);
     });
 
     //GET
-    app.get('/certificate/get/:id', async (req, res) => {
-        let id = req.params.id;
-        let result = await CertificateStore.fetchAsync(id);
-
-        if(result.errorStatus){
-            res.status(result.errorStatus).send();
-        }
-
-        res.status(200).send(result);
+    app.get('/certificate/getOne/:id', async (req, res) => {
+        let result = await CertificateService.fetchCertificateAsync(req.params.id);
+        res.status(result.status).send(result.response);
     });
 
-    app.get('/certificate/getTree', async (req, res) => {
-        let tree = await CertificateStore.fetchTreeAsync('null');
-        res.status(200).send(tree);
+    app.get('/certificate/getAll', async (req, res) => {
+        let result = await CertificateService.fetchCertificateTreesAsync();
+        res.status(result.status).send(result.response);
     });
 
-    app.get('/certificate/getTree/:rootId', async (req, res) => {
-        let rootId = req.params.rootId;
-        let tree = await CertificateStore.fetchTreeAsync(rootId);
-        res.status(200).send(tree);
+    app.get('/certificate/getAll/:rootId', async (req, res) => {
+        let result = await CertificateService.fetchCertificateTreeAsync(req.params.rootId);
+        res.status(result.status).send(result.response);
+    });
+
+    app.get('/certificate/getUpToRoot/:childId', async (req, res) => {
+        let result = await CertificateService.fetchUpToRootAsync(req.params.childId);
+        res.status(result.status).send(result.response);
     });
 
     //DELETE
     app.delete('/certificate/drop/', async (req, res) => {
-        await CertificateStore.dropAsync();
-
+        await CertificateService.removeAll();
         res.status(200).send();
     });
 
