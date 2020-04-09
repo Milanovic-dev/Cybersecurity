@@ -5,27 +5,15 @@ import { loadCertificate } from '../certificateBuilder/builder';
 
 const asn1js = require("asn1js");
 
-const { Certificate,
-    AttributeTypeAndValue,
-    BasicConstraints,
-    Extension,
-    ExtKeyUsage,
-    CertificateTemplate,
-    CAVersion,
+const {
     getCrypto,
     setEngine,
     CryptoEngine,
-    getAlgorithmParameters,
-    RSAPublicKey,
-    InfoAccess,
-    AccessDescription,
-    GeneralName,
-    AuthorityKeyIdentifier,
     OCSPRequest,
     OCSPResponse,
     BasicOCSPResponse,
     ResponseBytes,
-    SingleResponse
+    SingleResponse,
 } = require("pkijs")
 
 const nodeSpecificCrypto = require('../certificateBuilder/node-crypto');
@@ -95,14 +83,13 @@ setEngine('nodeEngine', nodeSpecificCrypto, new CryptoEngine({
 }));
 
 
-function createOCSPRespInternal() {
-
+function createOCSPRespInternal(certificatePEM, privateKeyPEM, intermediatePEM, ocspReqest, revoked=null) {
     let issuerKeyHash, issuerNameHash;
 
     const crypto = getCrypto();
 
-    const certificate = loadCertificate(fs.readFileSync('./endEntity.crt', 'utf8'));
-    const caCertificate = loadCertificate(fs.readFileSync('./intermediate.crt', 'utf8'));
+    const certificate = loadCertificate(certificatePEM);
+    const caCertificate = loadCertificate(intermediatePEM);
     //region Initial variables
     let sequence = Promise.resolve();
 
@@ -112,7 +99,7 @@ function createOCSPRespInternal() {
     let privateKey;
 
     sequence = sequence.then(() =>
-        importPrivateKey(fs.readFileSync('./endEntity.key', 'utf8')),
+        importPrivateKey(privateKeyPEM),
         error => Promise.reject(`Error during exporting public key: ${error}`));
 
     sequence = sequence.then((result) => {
@@ -133,7 +120,9 @@ function createOCSPRespInternal() {
 
     sequence = sequence.then((result) => {
         issuerNameHash = result;
-    })
+    });
+
+
 
 
     //region Create specific TST info structure to sign
@@ -143,10 +132,6 @@ function createOCSPRespInternal() {
             ocspRespSimpl.responseBytes = new ResponseBytes();
             ocspRespSimpl.responseBytes.responseType = "1.3.6.1.5.5.7.48.1.1";
 
-            const responderIDBuffer = new ArrayBuffer(1);
-            const responderIDView = new Uint8Array(responderIDBuffer);
-            responderIDView[0] = 0x01;
-
             ocspBasicResp.tbsResponseData.responderID = certificate.issuer;
             ocspBasicResp.tbsResponseData.producedAt = new Date();
 
@@ -155,13 +140,31 @@ function createOCSPRespInternal() {
             response.certID.issuerNameHash.valueBlock.valueHex = issuerNameHash; // Fiction hash
             response.certID.issuerKeyHash.valueBlock.valueHex = issuerKeyHash; // Fiction hash
             response.certID.serialNumber.valueBlock.valueDec = certificate.serialNumber.valueBlock.valueDec; // Fiction serial number
-            response.certStatus = new asn1js.Primitive({
-                idBlock: {
-                    tagClass: 3, // CONTEXT-SPECIFIC
-                    tagNumber: 0 // [0]
-                },
-                lenBlockLength: 1 // The length contains one byte 0x00
-            }); // status - success
+
+
+            if (revoked) {
+                response.certStatus = new asn1js.Constructed({
+                    //name: (names.certStatus || ""),
+                    idBlock: {
+                        tagClass: 3, // CONTEXT-SPECIFIC
+                        tagNumber: 1 // [1]
+                    },
+                    value: [
+                        new asn1js.GeneralizedTime({ valueDate: revoked }),
+                        //null
+                    ]
+                });
+
+            } else {
+                response.certStatus = new asn1js.Primitive({
+                    idBlock: {
+                        tagClass: 3, // CONTEXT-SPECIFIC
+                        tagNumber: 0 // [0]
+                    },
+                    lenBlockLength: 1 // The length contains one byte 0x00
+                }); // status - success
+            }
+
             response.thisUpdate = new Date();
 
             ocspBasicResp.tbsResponseData.responses.push(response);
@@ -176,10 +179,35 @@ function createOCSPRespInternal() {
     //region Finally create completed OCSP response structure
     return sequence.then(
         () => {
+            if (ocspReqest.serialNumber != certificate.serialNumber.valueBlock.valueDec) {
+                return {
+                    error: 'Wrong request'
+                };
+            }
+            if (ocspReqest.issuerKeyHash != bufferToHexCodes(issuerKeyHash)) {
+                return {
+                    error: 'Wrong request'
+                };
+            }
+            if (ocspReqest.issuerNameHash != bufferToHexCodes(issuerNameHash)) {
+                return {
+                    error: 'Wrong request'
+                };
+            }
+
+
+
             const encodedOCSPBasicResp = ocspBasicResp.toSchema().toBER(false);
             ocspRespSimpl.responseBytes.response = new asn1js.OctetString({ valueHex: encodedOCSPBasicResp });
             console.log(ocspRespSimpl.toSchema().toBER(false));
-            return ocspRespSimpl.toSchema().toBER(false);
+
+
+
+            return {
+                issuerKeyHash: issuerKeyHash,
+                issuerNameHash: issuerNameHash,
+                response: ocspRespSimpl.toSchema().toBER(false)
+            }
         }
     );
     //endregion
@@ -213,7 +241,7 @@ function createOCSPResp() {
 }
 
 function parseOCSPReq(ocspReqBuffer) {
-    console.log(ocspReqBuffer);
+    //console.log(ocspReqBuffer);
     //region Initial check 
     if (ocspReqBuffer.byteLength === 0) {
         console.log("Nothing to parse!");
@@ -224,84 +252,23 @@ function parseOCSPReq(ocspReqBuffer) {
     //region Decode existing OCSP request
     const asn1 = asn1js.fromBER(ocspReqBuffer);
     const ocspReqSimpl = new OCSPRequest({ schema: asn1.result });
-    console.log(JSON.stringify(ocspReqSimpl.toJSON(), null, 4));
+    //console.log(JSON.stringify(ocspReqSimpl.toJSON(), null, 4));
     //endregion 
+    console.log(JSON.stringify( ocspReqSimpl.toJSON(), null, 4) )
 
-    //region Put information about OCSP request requestor 
-    if ("requestorName" in ocspReqSimpl.tbsRequest) {
-        switch (ocspReqSimpl.tbsRequest.requestorName.type) {
-            case 1: // rfc822Name
-            case 2: // dNSName
-            case 6: // uniformResourceIdentifier
-                // noinspection InnerHTMLJS
-                console.log(ocspReqSimpl.tbsRequest.requestorName.value.valueBlock.value);
-                //document.getElementById("ocsp-req-name-simpl").innerHTML = ocspReqSimpl.tbsRequest.requestorName.value.valueBlock.value;
-                //document.getElementById("ocsp-req-nm-simpl").style.display = "block";
-                break;
-            case 7: // iPAddress
-                {
-                    const view = new Uint8Array(ocspReqSimpl.tbsRequest.requestorName.value.valueBlock.valueHex);
-                    console.log(`${view[0].toString()}.${view[1].toString()}.${view[2].toString()}.${view[3].toString()}`);
-                    // noinspection InnerHTMLJS
-                    //document.getElementById("ocsp-req-name-simpl").innerHTML = `${view[0].toString()}.${view[1].toString()}.${view[2].toString()}.${view[3].toString()}`;
-                    //document.getElementById("ocsp-req-nm-simpl").style.display = "block";
-                }
-                break;
-            case 3: // x400Address
-            case 5: // ediPartyName
-                // noinspection InnerHTMLJS
-                console.log((ocspReqSimpl.tbsRequest.requestorName.type === 3) ? "<type \"x400Address\">" : "<type \"ediPartyName\">");
-                //document.getElementById("ocsp-req-name-simpl").innerHTML = (ocspReqSimpl.tbsRequest.requestorName.type === 3) ? "<type \"x400Address\">" : "<type \"ediPartyName\">";
-                //document.getElementById("ocsp-req-nm-simpl").style.display = "block";
-                break;
-            case 4: // directoryName
-                {
-                    const rdnmap = {
-                        "2.5.4.6": "C",
-                        "2.5.4.10": "O",
-                        "2.5.4.11": "OU",
-                        "2.5.4.3": "CN",
-                        "2.5.4.7": "L",
-                        "2.5.4.8": "S",
-                        "2.5.4.12": "T",
-                        "2.5.4.42": "GN",
-                        "2.5.4.43": "I",
-                        "2.5.4.4": "SN",
-                        "1.2.840.113549.1.9.1": "E-mail"
-                    };
 
-                    for (let i = 0; i < ocspReqSimpl.tbsRequest.requestorName.value.typesAndValues.length; i++) {
-                        let typeval = rdnmap[ocspReqSimpl.tbsRequest.requestorName.value.typesAndValues[i].type];
-                        if (typeof typeval === "undefined")
-                            typeval = ocspReqSimpl.tbsRequest.requestorName.value.typesAndValues[i].type;
-
-                        const subjval = ocspReqSimpl.tbsRequest.requestorName.value.typesAndValues[i].value.valueBlock.value;
-                        console.log(typeval, subjval);
-                    }
-
-                }
-                break;
-            default:
-        }
-    }
-    //endregion 
-
+    let res = [];
     //region Put information about requests 
     for (let i = 0; i < ocspReqSimpl.tbsRequest.requestList.length; i++) {
-        console.log(ocspReqSimpl.tbsRequest.requestList[i].reqCert);
-        console.log(bufferToHexCodes(ocspReqSimpl.tbsRequest.requestList[i].reqCert.serialNumber.valueBlock.valueHex));
-        //console.log(bufferToHexCodes(ocspReqSimpl.tbsRequest.requestList[i].reqCert.issuerHash.valueBlock.valueHex));
+        //console.log(ocspReqSimpl.tbsRequest.requestList[i].reqCert.issuerKeyHash.valueBlock.valueHex);
+        res.push({
+            serialNumber: ocspReqSimpl.tbsRequest.requestList[i].reqCert.serialNumber.valueBlock.valueDec,
+            issuerKeyHash: bufferToHexCodes(ocspReqSimpl.tbsRequest.requestList[i].reqCert.issuerKeyHash.valueBlock.valueHex),
+            issuerNameHash: bufferToHexCodes(ocspReqSimpl.tbsRequest.requestList[i].reqCert.issuerNameHash.valueBlock.valueHex)
 
+        })
     }
-    //endregion 
-
-    //region Put information about request extensions 
-    if ("requestExtensions" in ocspReqSimpl.tbsRequest) {
-        for (let i = 0; i < ocspReqSimpl.tbsRequest.requestExtensions.length; i++) {
-            console.log(ocspReqSimpl.tbsRequest.requestExtensions[i].extnID);
-        }
-
-    }
+    return res;
     //endregion 
 }
 
@@ -309,13 +276,31 @@ function parseOCSPReq(ocspReqBuffer) {
 //createOCSPRespInternal();
 module.exports = function (app) {
     app.post('/ocsp/check', async (req, res) => {
+        let request = parseOCSPReq(buf2ab(req.body));
+        if (!request.length) {
+            res.status(500);
+            return;
+        }
 
-        parseOCSPReq(buf2ab(req.body));
-        //res.status(200).send();
+        console.log(request);
+
         res.writeHead(200, [['Content-Type', 'application/ocsp-respose']]);
 
-        let response = await createOCSPRespInternal();
+        let response = await createOCSPRespInternal(
+            fs.readFileSync('./endEntity.crt', 'utf8'),
+            fs.readFileSync('./endEntity.key', 'utf8'),
+            fs.readFileSync('./intermediate.crt', 'utf8'),
+            request[0]
+        );
+
         console.log(response);
-        res.end( Buffer.from(response));
+
+        if (response.error) {
+            res.status(500);
+            return;
+        }
+
+        res.end(Buffer.from(response.response));
     })
+
 };
