@@ -65,8 +65,8 @@ app.get('/certificate/test', async (req, res) => {
 });
 
 
-async function test(){
-    /*let rootResult = await generateCertificate({
+/*async function test(){
+    let rootResult = await generateCertificate({
         serialNumber: 1,
         issuer: {
             country: 'BA',
@@ -183,8 +183,10 @@ async function test(){
     //console.log(JSON.stringify( await parseCertificate(fs.readFileSync('test.cer', 'utf8')), null ,4) )
     
     //console.log(parseCertificate(result.certificate));
-    */
+    
 }
 
+test();
+*/
 
 export default app;
