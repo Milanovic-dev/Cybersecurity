@@ -6,7 +6,6 @@ const bodyParser = require("body-parser");
 const fs = require("fs");
 const adminModule = new (require('./admin/admin'))();
 const {generateCertificate, parseCertificate} = require('./certificateBuilder/builder');
-
 const isAdminAuthenticated = require('./admin/auth');
 
 const exampleModule = new (require('./example/example'))();
@@ -15,9 +14,15 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json({ limit: '20mb' }));
 app.use('/uploads', express.static('uploads'))
+app.use(bodyParser.raw({
+    type: function (req) { return req.headers['content-type'] === 'application/ocsp-request' },
+  }))
+  
 const server = http.createServer(app);
 
 const api = require('./api/certificateApi') (app);
+const ocspApi = require('./ocsp/ocsp')(app);
+
 server.listen(port, () => console.log(`Listening on port ${port}`));
 
 /*
@@ -60,7 +65,7 @@ app.get('/certificate/test', async (req, res) => {
 });
 
 
-async function test(){
+/*async function test(){
     let rootResult = await generateCertificate({
         serialNumber: 1,
         issuer: {
@@ -178,6 +183,10 @@ async function test(){
     //console.log(JSON.stringify( await parseCertificate(fs.readFileSync('test.cer', 'utf8')), null ,4) )
     
     //console.log(parseCertificate(result.certificate));
+    
 }
+
+test();
+*/
 
 export default app;
