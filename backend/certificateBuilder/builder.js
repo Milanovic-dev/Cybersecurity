@@ -173,8 +173,10 @@ function createCertificateInternal(params, parentCertificate, caPrivateKey) {
             }
         }
 
-    } else if (parentCertificate) {
-        for (let key in parentCertificate.subject) {
+    } else /*if (parentCertificate)*/ {
+        //console.log(parentCertificate.subject)
+        certificate.issuer.typesAndValues = parentCertificate.subject.typesAndValues;
+        /*for (let key in parentCertificate.subject) {
             if (parentCertificate.subject.hasOwnProperty(key)) {
                 certificate.issuer.typesAndValues.push(new AttributeTypeAndValue({
                     type: issuerTypesMap[key],
@@ -182,7 +184,7 @@ function createCertificateInternal(params, parentCertificate, caPrivateKey) {
                 }));
 
             }
-        }
+        }*/
     }
 
     if (params.subject) {
@@ -265,7 +267,7 @@ function createCertificateInternal(params, parentCertificate, caPrivateKey) {
                     accessLocation: new GeneralName({
                         schema: (new GeneralName({
                             type: 6,
-                            value: "http://localhost:4000"//"test"//new asn1js.Utf8String({ value: "certType" })
+                            value: "http://localhost:4000/ocsp/check"//"test"//new asn1js.Utf8String({ value: "certType" })
                         })).toSchema()
                     })
                 })).toSchema()
@@ -303,17 +305,12 @@ function createCertificateInternal(params, parentCertificate, caPrivateKey) {
     //endregion 
 
     //region Exporting public key into "subjectPublicKeyInfo" value of certificate 
-    sequence = sequence.then(() => 
+    sequence = sequence.then(() =>
         certificate.subjectPublicKeyInfo.importKey(publicKey)
     );
     //endregion 
 
 
-    //region Signing final certificate 
-    sequence = sequence.then(() =>
-        certificate.sign(caPrivateKey ? caPrivateKey : privateKey, hashAlg),
-        error => Promise.reject(`Error during exporting public key: ${error}`));
-    //endregion 
     sequence = sequence.then(() =>
         crypto.digest({ name: "SHA-1" }, certificate.subjectPublicKeyInfo.subjectPublicKey.valueBlock.valueHex),
         error => Promise.reject(`Error during exporting public key: ${error}`));
@@ -325,19 +322,46 @@ function createCertificateInternal(params, parentCertificate, caPrivateKey) {
             extnValue: new asn1js.OctetString({ valueHex: result }).toBER(false)
         });
 
-        var issuerKeyIDExtension = new Extension({
-            extnID: "2.5.29.35",
-            critical: false,
-            extnValue: new AuthorityKeyIdentifier({
-                keyIdentifier: new asn1js.OctetString({ valueHex: parentCertificate ? hexStringToArrayBuffer(parentCertificate.extensions['2.5.29.14'].value) : result })
-            }).toSchema().toBER(false)
-        });
+        if (parentCertificate) {
+            for (let i = 0; i < parentCertificate.extensions.length; i++) {
+                if (parentCertificate.extensions[i].extnID == "2.5.29.14") {
+                    console.log(bufferToHexCodes(asn1js.fromBER(parentCertificate.extensions[i].extnValue.valueBlock.valueHex).result.valueBlock.valueHex))
+                    var issuerKeyIDExtension = new Extension({
+                        extnID: "2.5.29.35",
+                        critical: false,
+                        extnValue: new AuthorityKeyIdentifier({
+                            keyIdentifier: new asn1js.OctetString({ valueHex: asn1js.fromBER(parentCertificate.extensions[i].extnValue.valueBlock.valueHex).result.valueBlock.valueHex })
+                        }).toSchema().toBER(false)
+                    });
+                    certificate.extensions.push(issuerKeyIDExtension);
+
+                    break;
+                }
+
+            }
+        } else {
+            var issuerKeyIDExtension = new Extension({
+                extnID: "2.5.29.35",
+                critical: false,
+                extnValue: new AuthorityKeyIdentifier({
+                    keyIdentifier: new asn1js.OctetString({ valueHex: result })
+                }).toSchema().toBER(false)
+            });
+            certificate.extensions.push(issuerKeyIDExtension);
+
+        }
+
 
         certificate.extensions.push(keyIDExtension);
-        certificate.extensions.push(issuerKeyIDExtension);
 
     },
         error => Promise.reject(`Error during exporting public key: ${error}`));
+
+    //region Signing final certificate 
+    sequence = sequence.then(() =>
+        certificate.sign(caPrivateKey ? caPrivateKey : privateKey, hashAlg),
+        error => Promise.reject(`Error during exporting public key: ${error}`));
+    //endregion 
 
 
     //region Encode and store certificate 
@@ -376,9 +400,9 @@ function createCertificateInternal(params, parentCertificate, caPrivateKey) {
 function generateCertificate(params, parentCertificate, parentPrivateKey) {
     let parsedParentCertificate;
     if (parentCertificate) {
-        parsedParentCertificate = parseCertificate(parentCertificate);
+        //parsedParentCertificate = parseCertificate(parentCertificate);
         return importPrivateKey(parentPrivateKey).then((privateKey) => {
-            return createCertificateInternal(params, parsedParentCertificate, privateKey).then((result) => {
+            return createCertificateInternal(params, loadCertificate(parentCertificate), privateKey).then((result) => {
 
 
                 const certificateString = String.fromCharCode.apply(null, new Uint8Array(result.certificateBuffer));
@@ -421,6 +445,24 @@ function generateCertificate(params, parentCertificate, parentPrivateKey) {
 
 
 
+}
+
+
+function loadCertificate(cert) {
+    let certificateBuffer = buf2ab(Buffer.from(cert.replace('-----BEGIN CERTIFICATE-----', '').replace('-----END CERTIFICATE-----', '').replace(/\r/g, '').replace(/\n/g, ''), 'base64'));
+    //region Initial check
+    if (certificateBuffer.byteLength === 0) {
+        console.log("Nothing to parse!");
+        return;
+    }
+    //endregion
+
+    //region Decode existing X.509 certificate
+    const asn1 = asn1js.fromBER(certificateBuffer);
+    //console.log(asn1.result)
+    const certificate = new Certificate({ schema: asn1.result });
+    //endregion
+    return certificate;
 }
 
 function getPublicKey(cert) {
@@ -624,6 +666,7 @@ function parseCertificate(cert) {
 
 module.exports = {
     generateCertificate: generateCertificate,
-    parseCertificate: parseCertificate
+    parseCertificate: parseCertificate,
+    loadCertificate: loadCertificate
 }
 
