@@ -4,13 +4,11 @@ import {
     Route,
     Switch
 } from 'react-router-dom';
-
 import AdminLoginPage from './views/admin/login';
 import ExampleListPage from './views/admin/exampleListPage';
-import ExampleFormPage from './views/admin/exampleFormPage';
 import Tree from './views/admin/tree';
 import CertView from './views/admin/certView'
-import AddSetificateForm from './views/admin/addSertificateForm';
+import AddCetificateForm from './views/admin/addCertificateForm';
 
 
 class Routes extends Component {
@@ -47,10 +45,10 @@ class Routes extends Component {
                         />
 
                         <Route
-                            path="/addSertificate"
+                            path="/addCertificate"
                             exact
                             render={(...renderProps) => (
-                                <AddSetificateForm {...renderProps} {...this.props} />
+                                <AddCetificateForm {...renderProps} {...this.props} />
                             )}
                         />
                         

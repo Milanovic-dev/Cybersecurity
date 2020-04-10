@@ -676,6 +676,18 @@ button {
     width: 20px;
     height: 20px;
     cursor: pointer; }
+  .checkbox-wrap .checked {
+    display: flex;
+    align-items: center;
+    justify-content: center; }
+    .checkbox-wrap .checked::after {
+      content: ' ';
+      display: block;
+      border-bottom: 4px solid #2196F3;
+      border-right: 4px solid #2196F3;
+      width: 7px;
+      height: 16px;
+      transform: rotate(45deg); }
   .checkbox-wrap .checkbox-label {
     color: #555555;
     font-size: 16px;
