@@ -51,6 +51,13 @@ class Routes extends Component {
                                 <AddCetificateForm {...renderProps} {...this.props} />
                             )}
                         />
+                        <Route
+                            path="/addCertificate/:parentId"
+                            exact
+                            render={(...renderProps) => (
+                                <AddCetificateForm {...renderProps} {...this.props} />
+                            )}
+                        />
                         
                         <Route
                             path="/tree"

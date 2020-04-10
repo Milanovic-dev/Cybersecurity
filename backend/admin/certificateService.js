@@ -20,8 +20,10 @@ const CertificateService = {
         }
         else
         {
-            let result = await generateCertificate(certObject, null); //[certificate, privateKey]
-            let storeResult = await CertificateStore.storeAsync(result, null);
+            let result = await generateCertificate(certObject); //[certificate, privateKey]
+            console.log(result);
+            let storeResult = await CertificateStore.storeAsync(result);
+            
             return {status: storeResult.status, response: { "insertedID": storeResult.insertedId }};
         }
     },

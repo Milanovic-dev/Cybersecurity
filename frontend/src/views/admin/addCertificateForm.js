@@ -21,7 +21,8 @@ class addCertificateForm extends Component {
     add(data){
         data.serialNumber = 1;
         console.log(data);
-        fetch('http://127.0.0.1:4000/certificate/createRoot', {
+        let url = this.props[0].match.params.parentId ? 'http://127.0.0.1:4000/certificate/create/' + this.props[0].match.params.parentId : 'http://127.0.0.1:4000/certificate/createRoot';
+        fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -41,7 +42,7 @@ class addCertificateForm extends Component {
                         <Col lg="12">
                         </Col>
                     </Row>
-                        <Form onSubmit={this.add} />
+                        <Form isRoot={!this.props[0].match.params.parentId} onSubmit={this.add} />
                 </Container>
             </div>
         );

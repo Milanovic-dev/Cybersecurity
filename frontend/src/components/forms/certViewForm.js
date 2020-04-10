@@ -110,7 +110,7 @@ class form extends React.Component {
                                 <Col lg="12">
                                     <h4 className="subtitle-cert space-top space-bottom">EXTENSIONS</h4>
                                 </Col>
-                                {/* <Col lg="12" className="space-bottom">
+                                <Col lg="12" className="space-bottom">
                                     <p>Extension ID: <span className="black">{this.props.initialValues.parsedCertificate.extensions["2.5.29.19"].extnID}</span></p>
                                     <p>Name: <span className="black">{this.props.initialValues.parsedCertificate.extensions["2.5.29.19"].name}</span></p>
                                     <p>Value: <span className="black">{JSON.stringify(this.props.initialValues.parsedCertificate.extensions["2.5.29.19"].value)}</span></p>
@@ -139,7 +139,7 @@ class form extends React.Component {
                                     <p>Extension ID: <span className="black">{this.props.initialValues.parsedCertificate.extensions["2.5.29.35"].extnID}</span></p>
                                     <p>Name: <span className="black">{this.props.initialValues.parsedCertificate.extensions["2.5.29.15"].name}</span></p>
                                     <p>Value: <span className="black">{JSON.stringify(this.props.initialValues.parsedCertificate.extensions["2.5.29.15"].value)}</span></p>
-                                </Col> */}
+                                </Col>
                             </Row>
                             <Row>
                                 <Col lg="6" className="input-wrap">

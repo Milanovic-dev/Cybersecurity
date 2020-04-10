@@ -20,7 +20,7 @@ dbConnect()
 
     //POST
     app.post('/certificate/createRoot', async (req, res) => {
-        let result = await CertificateService.createCertificateAsync(req.body, null);
+        let result = await CertificateService.createCertificateAsync(req.body, null);    
         res.status(result.status).send(result.response);
     });
 

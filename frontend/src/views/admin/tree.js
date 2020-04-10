@@ -66,7 +66,7 @@ class Tree extends Component {
     }
 
     componentDidMount() {
-        fetch('http://127.0.0.1:4000/certificate/getTree', {
+        fetch('http://127.0.0.1:4000/certificate/getAll', {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -137,7 +137,7 @@ class Tree extends Component {
 
 
                                             <span>
-                                                {node.parsedCertificate.issuer.commonName}
+                                                {node.parsedCertificate.subject.commonName}
                                             </span>
 
                                             {
@@ -145,7 +145,7 @@ class Tree extends Component {
                                                     <span className="buttons">
                                                         <Link to={`/certificate/${node.id}`}><button className="button-action preview">Pogledaj</button></Link>
                                                         <button className="button-action space download">Povuci</button>
-                                                        <button className="button-action space create-new">Kreiraj</button>
+                                                        <Link to={`/addCertificate/${node.id}`}><button className="button-action space create-new">Kreiraj</button></Link>
                                                     </span>
                                                     : null
                                             }
