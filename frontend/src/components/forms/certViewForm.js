@@ -1,6 +1,7 @@
 import React from 'react';
 import { Field, reduxForm } from 'redux-form'
-import Text from './fields/text';
+import Text from './fields/text_field';
+import TextArea from './fields/textarea';
 import Image from './fields/image';
 
 import {
@@ -27,6 +28,23 @@ const renderTextField = ({
             disabled={disabled}
         />
     )
+const renderTextAreaField = ({
+    input,
+    placeholder,
+    label,
+    meta: { touched, error },
+    disabled
+}) => (
+        <TextArea
+            placeholder={placeholder}
+            label={label}
+            errorText={touched && error}
+            error={touched && error}
+            {...input}
+            disabled={disabled}
+        />
+    )
+
 
 const renderImageField = ({
     input,
@@ -60,159 +78,90 @@ class form extends React.Component {
                         <Container fluid className="form-box">
                             <Row>
                                 <Col lg="12">
-                                    <h3 className="title">Pregled sertifikata</h3>
+                                    <h3 className="title space-bottom">Pregled sertifikata</h3>
                                 </Col>
-                                <Col lg="6" className="input-wrap">
-                                    <Field
-                                        name="serialNumber"
-                                        component={renderTextField}
-                                        label={"Serial number"}
-                                        disabled
-                                    ></Field>
+                                <Col lg="12">
+                                    <p>Serial number: <span className="black">{this.props.initialValues.parsedCertificate.serialNumber}</span></p>
+                                    <p>Valid from: <span className="black">{this.props.initialValues.parsedCertificate.validFrom}</span></p>
+                                    <p>Valid to: <span className="black">{this.props.initialValues.parsedCertificate.validTo}</span></p>
+                                    <p>PublicKey size: <span className="black">{this.props.initialValues.parsedCertificate.publicKeySize}</span></p>
+                                    <p>Signature algorithm: <span className="black">{this.props.initialValues.parsedCertificate.signatureAlgorithm}</span></p>
                                 </Col>
+                                <Col lg="12">
+                                    <h4 className="subtitle-cert space-top space-bottom">ISSUER</h4>
+                                    <p>Country: <span className="black">{this.props.initialValues.parsedCertificate.issuer.country}</span></p>
+                                    <p>Organization name: <span className="black">{this.props.initialValues.parsedCertificate.issuer.organizationName}</span></p>
+                                    <p>Organizational unit: <span className="black">{this.props.initialValues.parsedCertificate.issuer.organizationalUnit}</span></p>
+                                    <p>Common name: <span className="black">{this.props.initialValues.parsedCertificate.issuer.commonName}</span></p>
+                                    <p>Locality name: <span className="black">{this.props.initialValues.parsedCertificate.issuer.localityName}</span></p>
+                                    <p>State name: <span className="black">{this.props.initialValues.parsedCertificate.issuer.stateName}</span></p>
+                                    <p>Email: <span className="black">{this.props.initialValues.parsedCertificate.issuer.email}</span></p>
+                                </Col>
+                                <Col lg="12">
+                                    <h4 className="subtitle-cert space-top space-bottom">SUBJECT</h4>
+                                    <p>Country: <span className="black">{this.props.initialValues.parsedCertificate.subject.country}</span></p>
+                                    <p>Organization name: <span className="black">{this.props.initialValues.parsedCertificate.subject.organizationName}</span></p>
+                                    <p>Organizational unit: <span className="black">{this.props.initialValues.parsedCertificate.subject.organizationalUnit}</span></p>
+                                    <p>Common name: <span className="black">{this.props.initialValues.parsedCertificate.subject.commonName}</span></p>
+                                    <p>Locality name: <span className="black">{this.props.initialValues.parsedCertificate.subject.localityName}</span></p>
+                                    <p>State name: <span className="black">{this.props.initialValues.parsedCertificate.subject.stateName}</span></p>
+                                    <p>Email: <span className="black">{this.props.initialValues.parsedCertificate.subject.email}</span></p>
+                                </Col>
+                                <Col lg="12">
+                                    <h4 className="subtitle-cert space-top space-bottom">EXTENSIONS</h4>
+                                </Col>
+                                {/* <Col lg="12" className="space-bottom">
+                                    <p>Extension ID: <span className="black">{this.props.initialValues.parsedCertificate.extensions["2.5.29.19"].extnID}</span></p>
+                                    <p>Name: <span className="black">{this.props.initialValues.parsedCertificate.extensions["2.5.29.19"].name}</span></p>
+                                    <p>Value: <span className="black">{JSON.stringify(this.props.initialValues.parsedCertificate.extensions["2.5.29.19"].value)}</span></p>
+                                </Col>
+                                <Col lg="12" className="space-bottom">
+                                    <p>Extension ID: <span className="black">{this.props.initialValues.parsedCertificate.extensions["2.5.29.15"].extnID}</span></p>
+                                    <p>Name: <span className="black">{this.props.initialValues.parsedCertificate.extensions["2.5.29.15"].name}</span></p>
+                                    <p>Value: <span className="black">{JSON.stringify(this.props.initialValues.parsedCertificate.extensions["2.5.29.15"].value)}</span></p>
+                                </Col>
+                                <Col lg="12" className="space-bottom">
+                                    <p>Extension ID: <span className="black">{this.props.initialValues.parsedCertificate.extensions["2.5.29.37"].extnID}</span></p>
+                                    <p>Name: <span className="black">{this.props.initialValues.parsedCertificate.extensions["2.5.29.37"].name}</span></p>
+                                    <p>Value: <span className="black">{JSON.stringify(this.props.initialValues.parsedCertificate.extensions["2.5.29.37"].value)}</span></p>
+                                </Col>
+                                <Col lg="12" className="space-bottom">
+                                    <p>Extension ID: <span className="black">{this.props.initialValues.parsedCertificate.extensions["1.3.6.1.5.5.7.1.1"].extnID}</span></p>
+                                    <p>Name: <span className="black">{this.props.initialValues.parsedCertificate.extensions["1.3.6.1.5.5.7.1.1"].name}</span></p>
+                                    <p>Value: <span className="black">{JSON.stringify(this.props.initialValues.parsedCertificate.extensions["1.3.6.1.5.5.7.1.1"].value)}</span></p>
+                                </Col>
+                                <Col lg="12" className="space-bottom">
+                                    <p>Extension ID: <span className="black">{this.props.initialValues.parsedCertificate.extensions["2.5.29.14"].extnID}</span></p>
+                                    <p>Name: <span className="black">{this.props.initialValues.parsedCertificate.extensions["2.5.29.15"].name}</span></p>
+                                    <p>Value: <span className="black">{JSON.stringify(this.props.initialValues.parsedCertificate.extensions["2.5.29.15"].value)}</span></p>
+                                </Col>
+                                <Col lg="12" className="space-bottom">
+                                    <p>Extension ID: <span className="black">{this.props.initialValues.parsedCertificate.extensions["2.5.29.35"].extnID}</span></p>
+                                    <p>Name: <span className="black">{this.props.initialValues.parsedCertificate.extensions["2.5.29.15"].name}</span></p>
+                                    <p>Value: <span className="black">{JSON.stringify(this.props.initialValues.parsedCertificate.extensions["2.5.29.15"].value)}</span></p>
+                                </Col> */}
                             </Row>
-                            <hr className="horizontal-rule"/>
-                            <Row>
-                                <Col lg="6">
-                                    <h4 className="subtitle">ISSUER</h4>
-                                </Col>
-                                <Col lg="6">
-                                    <h4 className="subtitle">SUBJECT</h4>
-                                </Col>
-                                <Col lg="6" className="input-wrap">
-                                    <Field
-                                        name="countryIss"
-                                        component={renderTextField}
-                                        label={"Country"}
-                                        disabled
-                                    ></Field>
-                                </Col>
-                                <Col lg="6" className="input-wrap">
-                                    <Field
-                                        name="countrySub"
-                                        component={renderTextField}
-                                        label={"Country"}
-                                        disabled
-                                    ></Field>
-                                </Col>
-                                <Col lg="6" className="input-wrap">
-                                    <Field
-                                        name="organizationNameIss"
-                                        component={renderTextField}
-                                        label={"Organization name"}
-                                        disabled
-                                    ></Field>
-                                </Col>
-                                <Col lg="6" className="input-wrap">
-                                    <Field
-                                        name="organizationNameSub"
-                                        component={renderTextField}
-                                        label={"Organization name"}
-                                        disabled
-                                    ></Field>
-                                </Col>
-                                <Col lg="6" className="input-wrap">
-                                    <Field
-                                        name="organizationalUnitIss"
-                                        component={renderTextField}
-                                        label={"Organizational unit"}
-                                        disabled
-                                    ></Field>
-                                </Col>
-                                <Col lg="6" className="input-wrap">
-                                    <Field
-                                        name="organizationalUnitSub"
-                                        component={renderTextField}
-                                        label={"Organizational unit"}
-                                        disabled
-                                    ></Field>
-                                </Col>
-                                <Col lg="6" className="input-wrap">
-                                    <Field
-                                        name="commonNameIss"
-                                        component={renderTextField}
-                                        label={"Common name"}
-                                        disabled
-                                    ></Field>
-                                </Col>
-                                <Col lg="6" className="input-wrap">
-                                    <Field
-                                        name="commonNameSub"
-                                        component={renderTextField}
-                                        label={"Common name"}
-                                        disabled
-                                    ></Field>
-                                </Col>
-                                <Col lg="6" className="input-wrap">
-                                    <Field
-                                        name="localityNameIss"
-                                        component={renderTextField}
-                                        label={"Locality name"}
-                                        disabled
-                                    ></Field>
-                                </Col>
-                                <Col lg="6" className="input-wrap">
-                                    <Field
-                                        name="localityNameSub"
-                                        component={renderTextField}
-                                        label={"Locality name"}
-                                        disabled
-                                    ></Field>
-                                </Col>
-                                <Col lg="6" className="input-wrap">
-                                    <Field
-                                        name="stateNameIss"
-                                        component={renderTextField}
-                                        label={"State name"}
-                                        disabled
-                                    ></Field>
-                                </Col>
-                                <Col lg="6" className="input-wrap">
-                                    <Field
-                                        name="stateNameSub"
-                                        component={renderTextField}
-                                        label={"State name"}
-                                        disabled
-                                    ></Field>
-                                </Col>
-                                <Col lg="6" className="input-wrap">
-                                    <Field
-                                        name="emailIss"
-                                        component={renderTextField}
-                                        label={"Email"}
-                                        disabled
-                                    ></Field>
-                                </Col>
-                                <Col lg="6" className="input-wrap">
-                                    <Field
-                                        name="emailSub"
-                                        component={renderTextField}
-                                        label={"Email"}
-                                        disabled
-                                    ></Field>
-                                </Col>
-                            </Row>
-                            <hr className="horizontal-rule"/>
                             <Row>
                                 <Col lg="6" className="input-wrap">
                                     <Field
-                                        name="validFrom"
-                                        component={renderTextField}
-                                        label={"Valid from"}
+                                        name="certificate"
+                                        component={renderTextAreaField}
+                                        label={"Certificate"}
                                         disabled
                                     ></Field>
+
                                 </Col>
                                 <Col lg="6" className="input-wrap">
                                     <Field
-                                        name="validTo"
-                                        component={renderTextField}
-                                        label={"Valid to"}
+                                        name="privateKey"
+                                        component={renderTextAreaField}
+                                        label={"Private Key"}
                                         disabled
                                     ></Field>
+
                                 </Col>
-
-
                             </Row>
+
 
 
                         </Container>

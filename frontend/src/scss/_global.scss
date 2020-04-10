@@ -98,15 +98,28 @@ button{
         font-weight: $semiBold;
         color: $black;
     }
+    
+    
 
     .subtitle{
         font-size: 15px;
         font-weight: $light;
         color: $darkGray;
         margin-bottom: 30px;
-
     }
-
+    .subtitle-cert{
+        font-size: 15px;
+        font-weight: $medium;
+        color: black;
+        margin-bottom: 30px;
+    }
+    .space-top{
+        margin: 0;
+        margin-top: 2%;
+    }
+    .space-bottom{
+        margin-bottom: 2%;
+    }
     .button{
         margin-bottom: 10px;
     }
@@ -148,6 +161,15 @@ button{
         border: 0;
         float: right;
 
+    }
+    p{
+        margin: 0;
+        font-size: 15px;
+        font-weight: $light;
+        color: $black;
+    }
+    .black{
+        color: black;
     }
 }
 
@@ -526,13 +548,15 @@ button{
         background-color: $red;
     }
     .create-new{
-        background-color: $blueGray;
+        background-color: $green;
     }
 }
 .tree{
     padding-top: 3%;
+
     
 }
+
 .title{
     font-size: 20px;
     font-weight: $semiBold;
@@ -540,7 +564,7 @@ button{
 }
 .horizontal-rule{
     background-color: $darkGray;
-
+}
 
 .date-time-picker-wrap{
     height: 54px;

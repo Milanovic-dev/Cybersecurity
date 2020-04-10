@@ -16,7 +16,7 @@ const Toggler = styled(({ state, ...props }) => (
   color: #333;
   display: inline-block;
   text-align: center;
-  margin-right: 20px;
+  margin-right: 30px;
 `;
 
 // const Toggler = styled(({ state, ...props }) => (
