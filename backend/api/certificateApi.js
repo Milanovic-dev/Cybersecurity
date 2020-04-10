@@ -18,15 +18,21 @@ dbConnect()
         console.log('DB error')
     })
 
+    //POST
     app.post('/certificate/createRoot', async (req, res) => {
         let result = await CertificateService.createCertificateAsync(req.body, null);
         res.status(result.status).send(result.response);
     });
 
-    //POST
     app.post('/certificate/create/:parentId', async (req, res) => {
         let result = await CertificateService.createCertificateAsync(req.body, req.params.parentId);
         res.status(result.status).send(result.response);
+    });
+
+    //PUT
+    app.put('/certificate/revoke/:id', async (req, res) => {
+        let result = await CertificateService.revoke(req.params.id);
+        res.status(result.status).send();
     });
 
     //GET
@@ -45,8 +51,8 @@ dbConnect()
         res.status(result.status).send(result.response);
     });
 
-    app.get('/certificate/getUpToRoot/:childId', async (req, res) => {
-        let result = await CertificateService.fetchUpToRootAsync(req.params.childId);
+    app.get('/certificate/getUpToRoot/:serialNumber', async (req, res) => {
+        let result = await CertificateService.fetchUpToRootAsync(req.params.serialNumber);
         res.status(result.status).send(result.response);
     });
 

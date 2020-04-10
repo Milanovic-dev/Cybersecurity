@@ -15,13 +15,26 @@ class form extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
+            
         }
+
+        this.handleChange = this.handleChange.bind(this);
+        this.handleSubmit = this.handleSubmit.bind(this);
+    }
+
+    handleSubmit(event){
+        event.preventDefault();
+
+        console.log(this.props.match.params.parentId);
+    }
+
+    handleChange(event){
+        console.log(event);
     }
 
     render() {
-        const { handleSubmit} = this.props;
         return (
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={this.handleSubmit}>
                 <Row>
                     <Col lg="12" >
                         <Container fluid className="form-box">
@@ -45,6 +58,7 @@ class form extends React.Component {
                                         label={"Država u dva slova"}
                                         placeholder="Izaberite državu"
                                         validate={[required]}
+                                        onChange={this.handleChange}
                                     ></Field>
                                 </Col>
                                 <Col lg="6"  className="input-wrap">
@@ -54,6 +68,7 @@ class form extends React.Component {
                                         label={"Organizacija"}
                                         placeholder="Unesite ime organizacije"
                                         validate={[required]}
+                                        onChange={this.handleChange}
                                     ></Field>
                                 </Col>
                                 </Row>
@@ -65,6 +80,7 @@ class form extends React.Component {
                                         label={"Organizaciona jedinica"}
                                         placeholder="Unesite organizacionu jedinicu"
                                         validate={[required]}
+                                        onChange={this.handleChange}
                                     ></Field>
                                 </Col>
                                 <Col lg="6"  className="input-wrap">
@@ -74,6 +90,7 @@ class form extends React.Component {
                                         label={"Uobičajeno ime"}
                                         placeholder="Unesite uobičajeno ime"
                                         validate={[required]}
+                                        onChange={this.handleChange}
                                     ></Field>
                                 </Col>
                                 </Row>
@@ -85,6 +102,7 @@ class form extends React.Component {
                                         label={"Grad"}
                                         placeholder="Unesite grad"
                                         validate={[required]}
+                                        onChange={this.handleChange}
                                     ></Field>
                                 </Col>
                                 <Col lg="6"  className="input-wrap">
@@ -94,6 +112,7 @@ class form extends React.Component {
                                         label={"Država"}
                                         placeholder="Unesite državu"
                                         validate={[required]}
+                                        onChange={this.handleChange}
                                     ></Field>
                                 </Col>
                                 </Row>
@@ -105,6 +124,7 @@ class form extends React.Component {
                                             label={"Email"}
                                             placeholder="Unesite email"
                                             validate={[required]}
+                                            onChange={this.handleChange}
                                         ></Field>
                                     </Col>
                                 </Row>
@@ -122,6 +142,7 @@ class form extends React.Component {
                                         label={"Država u dva slova"}
                                         placeholder="Izaberite državu"
                                         validate={[required]}
+                                        onChange={this.handleChange}
                                     ></Field>
                                 </Col>
                                 <Col lg="6"  className="input-wrap">
@@ -131,6 +152,7 @@ class form extends React.Component {
                                         label={"Organizacija"}
                                         placeholder="Unesite ime organizacije"
                                         validate={[required]}
+                                        onChange={this.handleChange}
                                     ></Field>
                                 </Col>
                                 </Row>
@@ -142,6 +164,7 @@ class form extends React.Component {
                                         label={"Organizaciona jedinica"}
                                         placeholder="Unesite organizacionu jedinicu"
                                         validate={[required]}
+                                        onChange={this.handleChange}
                                     ></Field>
                                 </Col>
                                 <Col lg="6"  className="input-wrap">
@@ -151,6 +174,7 @@ class form extends React.Component {
                                         label={"Uobičajeno ime"}
                                         placeholder="Unesite uobičajeno ime"
                                         validate={[required]}
+                                        onChange={this.handleChange}
                                     ></Field>
                                 </Col>
                                 </Row>
@@ -162,6 +186,7 @@ class form extends React.Component {
                                         label={"Grad"}
                                         placeholder="Unesite grad"
                                         validate={[required]}
+                                        onChange={this.handleChange}
                                     ></Field>
                                 </Col>
                                 <Col lg="6"  className="input-wrap">
@@ -171,6 +196,7 @@ class form extends React.Component {
                                         label={"Država"}
                                         placeholder="Unesite državu"
                                         validate={[required]}
+                                        onChange={this.handleChange}
                                     ></Field>
                                 </Col>
                                 </Row>
@@ -182,6 +208,7 @@ class form extends React.Component {
                                             label={"Email"}
                                             placeholder="Unesite email"
                                             validate={[required]}
+                                            onChange={this.handleChange}
                                         ></Field>
                                     </Col>
                                 </Row>
@@ -198,6 +225,7 @@ class form extends React.Component {
                                         label={"Važi od:"}
                                         placeholder="Unesite datum početka važenja"
                                         validate={[required]}
+                                        onChange={this.handleChange}
                                     ></Field>
                                 </Col>
                                 <Col lg="6"  className="input-wrap">
@@ -207,6 +235,7 @@ class form extends React.Component {
                                         label={"Važi do:"}
                                         placeholder="Unesite datum kraja važenja"
                                         validate={[required]}
+                                        onChange={this.handleChange}
                                     ></Field>
                                 </Col>
                                 </Row>
@@ -219,6 +248,7 @@ class form extends React.Component {
                                         placeholder="Unesite ovlašćenja"
                                         validate={[required]}
                                         id="extendedKeyUsage"
+                                        onChange={this.handleChange}
                                     > 
                                         <option value="anyExtendedKeyUsage">Proširena ovlašćenja</option>
                                         <option value="serverAuth">Serverska autentifikacija</option>
@@ -228,7 +258,7 @@ class form extends React.Component {
                                         <option value="timeStamping">Time Stamping</option>
                                         <option value="OCSPSigning">OCSP potpisivanje</option>
                                         <option value="MicrosoftCertificateTrustListSigning">Potpisivanje liste poverenja sa Microsoft certifikatom</option>
-                                        <option value="MicrosoftEncryptedFileSystem">Microsoft šifrovani sistem datoteka</option>
+                                        <option value="MicrosoftEncryptedFileSystem">Microsoft šifrovani sistem datoteka</option>                             
                                         </Field>
                                 </Col>
                                 <Col lg="6"  className="input-wrap">
@@ -237,6 +267,7 @@ class form extends React.Component {
                                         component={renderTextField}
                                         label={"Moguć broj izdavanja CA sertifikata"}
                                         validate={[required]}
+                                        onChange={this.handleChange}
                                     ></Field>
                                 </Col>
                                 </Row>
@@ -247,6 +278,7 @@ class form extends React.Component {
                                         component={renderCheckField}
                                         label={"Da li je CA?"}
                                         validate={[required]}
+                                        onChange={this.handleChange}
                                     ></Field>
                                 </Col>
                                 </Row>

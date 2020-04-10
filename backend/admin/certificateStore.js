@@ -41,9 +41,10 @@ const store = async ({certificate, privateKey}, parentId) => {
             'serialNumber': certObj.serialNumber,
             'commonName': certObj.issuer.commonName,
             'parent': parentId,
+            'revoked': null
         });
         console.log(result.insertedId);
-        return {status: 200, response: result.insertedId};
+        return {status: 200, insertedId: result.insertedId};
     } catch(err){
         console.error(err);
         return {status: 500};
@@ -72,16 +73,24 @@ const fetch = async (id) => {
     return fetchFromFiles(dbCertificateObject);
 }
 
-const fetchTree = async (fromRoot) => {
+const fetchTreeInternal = async (fromRoot) => {
     let nodes = await db.collection('certificates').find({"parent" : fromRoot}).sort({_id:-1}).toArray();
     
     for(let i = 0 ; i < nodes.length ; i++){
-        let id = nodes[i]._id;
         nodes[i] = fetchFromFiles(nodes[i]);
-        nodes[i].children = await fetchTree(nodes[i].id.toString());
+        nodes[i].children = await fetchTreeInternal(nodes[i].id.toString());
     }
 
     return nodes;
+}
+
+const fetchTree = async (fromRoot) => {
+    let result = await fetchTreeInternal(fromRoot);
+      
+    let rootObject = await CertificateStore.fetchAsync(fromRoot);
+    rootObject.children = result;
+
+    return rootObject;
 };
 
 
@@ -109,7 +118,8 @@ const fetchFromFiles = (dbCertificateObject) => {
         parsedCertificate: parseCertificate(certificate), 
         certificate: certificate,
         privateKey: privateKey, 
-        parent: dbCertificateObject.parent
+        parent: dbCertificateObject.parent,
+        revoked: dbCertificateObject.revoked
     };
 };
 
@@ -147,8 +157,8 @@ const fetchRoots = async () => {
     return nodes;
 }
 
-const fetchUpToRoot = async (childId) => {
-    let current = await db.collection('certificates').findOne({"_id": ObjectID(childId)});
+const fetchUpToRoot = async (serialNumber) => {
+    let current = await db.collection('certificates').findOne({"serialNumber": serialNumber});
 
     let parent = current.parent;
     let ret = [fetchFromFiles(current)];
@@ -162,13 +172,27 @@ const fetchUpToRoot = async (childId) => {
     return ret;
 }
 
+const revokeOne = async (id) => {
+    await db.collection('certificates').updateOne(
+        {
+            _id: ObjectID(id)
+        },
+        {
+            $set: {
+                revoked: Math.floor(new Date().getTime()/ 1000)
+            }
+        })
+
+}
+
 const CertificateStore = {
     storeAsync: store,
     fetchAsync: fetch,
     fetchTreeAsync: fetchTree,
     dropAsync: drop,
     fetchRootsAsync: fetchRoots,
-    fetchUpToRootAsync: fetchUpToRoot
+    fetchUpToRootAsync: fetchUpToRoot,
+    revokeOneAsync : revokeOne
 }
 
 export default CertificateStore;

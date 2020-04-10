@@ -47,7 +47,7 @@ class Routes extends Component {
                         />
 
                         <Route
-                            path="/addSertificate"
+                            path="/addCertificate"
                             exact
                             render={(...renderProps) => (
                                 <AddSetificateForm {...renderProps} {...this.props} />
