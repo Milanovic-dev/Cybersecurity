@@ -56,9 +56,6 @@ function importPrivateKey(cert) {
 
 
 function formatPEM(pemString) {
-    /// <summary>Format string in order to have each line with length equal to 63</summary>
-    /// <param name="pemString" type="String">String to format</param>
-
     const stringLength = pemString.length;
     let resultString = '';
 
