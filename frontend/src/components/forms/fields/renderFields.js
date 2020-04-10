@@ -5,18 +5,41 @@ import Select from './select';
 import Check from './check';
 import DateTime from './date_picker';
 import Option from './2letters_option';
+import MultiSelect from './multiSelect';
 
+
+  export const renderMultiSelectField = ({
+    input,
+    placeholder,
+    label,
+    meta: { touched, error },
+    children,
+    id
+    }) => (
+          <MultiSelect
+              placeholder={placeholder}
+              label={label}
+              id={id}
+              errorText={touched && error}
+              error={touched && error}
+              {...input}
+          >
+              {children}
+          </MultiSelect>
+  )
 
 
   export const renderTextField = ({
     input,
     placeholder,
     label,
+    type,
     meta: { touched, error }
     }) => (
       <Text
       placeholder={placeholder}
       label={label}
+      type={type}
       errorText={touched && error}
       error={touched && error}
       {...input}

@@ -1,7 +1,6 @@
 import React from 'react';
 import { Field, reduxForm } from 'redux-form';
-import { renderTextField, renderSelectField, renderCheckField, renderDateTimeField, render2letterOption} from './fields/renderFields';
-import DatePicker from '../forms/fields/date_picker';
+import { renderTextField, renderMultiSelectField, renderCheckField, renderDateTimeField, render2letterOption} from './fields/renderFields';
 import {
     Container,
     Row,
@@ -18,176 +17,191 @@ class form extends React.Component {
         }
     }
 
+    handleChange(event) {
+    }
+
     render() {
-        const { handleSubmit} = this.props;
         return (
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={this.props.handleSubmit}>
                 <Row>
                     <Col lg="12" >
                         <Container fluid className="form-box">
                             <Row>
                                 <Col lg="12">
-                                    <h3 className="title">Novi sertifikat</h3>
-                                    <h6 className="subtitle">Unesite potrebne informacije za unos novog sertifikata</h6>
-
+                                    <h3 className="title">New certificate</h3>
+                                    <h6 className="subtitle">Enter required informations for the new certificate</h6>
                                 </Col>
                                 </Row>
                                 <Row>
                                 <Col lg="6"  className="input-wrap">
-                                    <h3 className="title">Izdavalac</h3>
+                                    <h3 className="title">Issuer</h3>
                                 </Col>
                                 </Row>
                                 <Row>
                                 <Col lg="6"  className="input-wrap">
                                     <Field
-                                        name="country"
+                                        name="issuer.country"
                                         component={render2letterOption}
-                                        label={"Država u dva slova"}
-                                        placeholder="Izaberite državu"
+                                        label={"Country in 2 letters"}
+                                        placeholder="Choose country"
                                         validate={[required]}
+                                        onChange={this.handleChange}
                                     ></Field>
                                 </Col>
                                 <Col lg="6"  className="input-wrap">
                                     <Field
-                                        name="organizationName"
+                                        name="issuer.organizationName"
                                         component={renderTextField}
-                                        label={"Organizacija"}
-                                        placeholder="Unesite ime organizacije"
+                                        label={"Organization"}
+                                        placeholder="Please enter the name of organization"
                                         validate={[required]}
-                                    ></Field>
-                                </Col>
-                                </Row>
-                                <Row>
-                                <Col lg="6"  className="input-wrap">
-                                    <Field
-                                        name="organisationUnit"
-                                        component={renderTextField}
-                                        label={"Organizaciona jedinica"}
-                                        placeholder="Unesite organizacionu jedinicu"
-                                        validate={[required]}
-                                    ></Field>
-                                </Col>
-                                <Col lg="6"  className="input-wrap">
-                                    <Field
-                                        name="commonName"
-                                        component={renderTextField}
-                                        label={"Uobičajeno ime"}
-                                        placeholder="Unesite uobičajeno ime"
-                                        validate={[required]}
+                                        onChange={this.handleChange}
                                     ></Field>
                                 </Col>
                                 </Row>
                                 <Row>
                                 <Col lg="6"  className="input-wrap">
                                     <Field
-                                        name="localityName"
+                                        name="issuer.organisationUnit"
                                         component={renderTextField}
-                                        label={"Grad"}
-                                        placeholder="Unesite grad"
+                                        label={"Organization unit"}
+                                        placeholder="Please enter the organization unit"
                                         validate={[required]}
+                                        onChange={this.handleChange}
                                     ></Field>
                                 </Col>
                                 <Col lg="6"  className="input-wrap">
                                     <Field
-                                        name="stateName"
+                                        name="issuer.commonName"
                                         component={renderTextField}
-                                        label={"Država"}
-                                        placeholder="Unesite državu"
+                                        label={"Common name"}
+                                        placeholder="Enter the common name"
                                         validate={[required]}
+                                        onChange={this.handleChange}
+                                    ></Field>
+                                </Col>
+                                </Row>
+                                <Row>
+                                <Col lg="6"  className="input-wrap">
+                                    <Field
+                                        name="issuer.localityName"
+                                        component={renderTextField}
+                                        label={"Locality name"}
+                                        placeholder="Please enter the locality name"
+                                        validate={[required]}
+                                        onChange={this.handleChange}
+                                    ></Field>
+                                </Col>
+                                <Col lg="6"  className="input-wrap">
+                                    <Field
+                                        name="issuer.stateName"
+                                        component={renderTextField}
+                                        label={"State name"}
+                                        placeholder="Please enter the locality name"
+                                        validate={[required]}
+                                        onChange={this.handleChange}
                                     ></Field>
                                 </Col>
                                 </Row>
                                 <Row>
                                     <Col lg="6"  className="input-wrap">
                                         <Field
-                                            name="email"
+                                            name="issuer.email"
                                             component={renderTextField}
                                             label={"Email"}
-                                            placeholder="Unesite email"
+                                            placeholder="Please enter an email"
                                             validate={[required]}
+                                            onChange={this.handleChange}
                                         ></Field>
                                     </Col>
                                 </Row>
         
                                 <Row>
                                     <Col lg="6"  className="input-wrap">
-                                        <h3 className="title">Primalac</h3>
+                                        <h3 className="title">Subject</h3>
                                     </Col>
                                 </Row>
                                 <Row>
                                 <Col lg="6"  className="input-wrap">
                                     <Field
-                                        name="country"
+                                        name="subject.country"
                                         component={render2letterOption}
-                                        label={"Država u dva slova"}
-                                        placeholder="Izaberite državu"
+                                        label={"Country in 2 letters"}
+                                        placeholder="Choose the country"
                                         validate={[required]}
+                                        onChange={this.handleChange}
                                     ></Field>
                                 </Col>
                                 <Col lg="6"  className="input-wrap">
                                     <Field
-                                        name="organizationName"
+                                        name="subject.organizationName"
                                         component={renderTextField}
-                                        label={"Organizacija"}
-                                        placeholder="Unesite ime organizacije"
+                                        label={"Organization name"}
+                                        placeholder="Enter the organization name"
                                         validate={[required]}
-                                    ></Field>
-                                </Col>
-                                </Row>
-                                <Row>
-                                <Col lg="6"  className="input-wrap">
-                                    <Field
-                                        name="organisationUnit"
-                                        component={renderTextField}
-                                        label={"Organizaciona jedinica"}
-                                        placeholder="Unesite organizacionu jedinicu"
-                                        validate={[required]}
-                                    ></Field>
-                                </Col>
-                                <Col lg="6"  className="input-wrap">
-                                    <Field
-                                        name="commonName"
-                                        component={renderTextField}
-                                        label={"Uobičajeno ime"}
-                                        placeholder="Unesite uobičajeno ime"
-                                        validate={[required]}
+                                        onChange={this.handleChange}
                                     ></Field>
                                 </Col>
                                 </Row>
                                 <Row>
                                 <Col lg="6"  className="input-wrap">
                                     <Field
-                                        name="localityName"
+                                        name="subject.organisationUnit"
                                         component={renderTextField}
-                                        label={"Grad"}
-                                        placeholder="Unesite grad"
+                                        label={"Organizatio unit"}
+                                        placeholder="Please enter the organization unit"
                                         validate={[required]}
+                                        onChange={this.handleChange}
                                     ></Field>
                                 </Col>
                                 <Col lg="6"  className="input-wrap">
                                     <Field
-                                        name="stateName"
+                                        name="subject.commonName"
                                         component={renderTextField}
-                                        label={"Država"}
-                                        placeholder="Unesite državu"
+                                        label={"Common name"}
+                                        placeholder="Please enter the common name"
                                         validate={[required]}
+                                        onChange={this.handleChange}
+                                    ></Field>
+                                </Col>
+                                </Row>
+                                <Row>
+                                <Col lg="6"  className="input-wrap">
+                                    <Field
+                                        name="subject.localityName"
+                                        component={renderTextField}
+                                        label={"Locality name"}
+                                        placeholder="Please enter the locality name"
+                                        validate={[required]}
+                                        onChange={this.handleChange}
+                                    ></Field>
+                                </Col>
+                                <Col lg="6"  className="input-wrap">
+                                    <Field
+                                        name="subject.stateName"
+                                        component={renderTextField}
+                                        label={"State name"}
+                                        placeholder="Please enter the state name"
+                                        validate={[required]}
+                                        onChange={this.handleChange}
                                     ></Field>
                                 </Col>
                                 </Row>
                                 <Row>
                                     <Col lg="6"  className="input-wrap">
                                         <Field
-                                            name="email"
+                                            name="subject.email"
                                             component={renderTextField}
                                             label={"Email"}
-                                            placeholder="Unesite email"
+                                            placeholder="Please enter an email"
                                             validate={[required]}
+                                            onChange={this.handleChange}
                                         ></Field>
                                     </Col>
                                 </Row>
                                 <Row>
                                     <Col lg="6"  className="input-wrap">
-                                            <h3 className="title">Detalji sertifikata</h3>
+                                            <h3 className="title">Certificate details</h3>
                                     </Col>
                                 </Row>
                                 <Row>
@@ -195,17 +209,17 @@ class form extends React.Component {
                                     <Field
                                         name="validFrom"
                                         component={renderDateTimeField}
-                                        label={"Važi od:"}
-                                        placeholder="Unesite datum početka važenja"
+                                        label={"Valid from:"}
+                                        placeholder="Choose a date"
                                         validate={[required]}
                                     ></Field>
                                 </Col>
                                 <Col lg="6"  className="input-wrap">
                                     <Field
                                         name="validTo"
-                                        component={DatePicker}
-                                        label={"Važi do:"}
-                                        placeholder="Unesite datum kraja važenja"
+                                        component={renderDateTimeField}
+                                        label={"Valid to:"}
+                                        placeholder="Choose a date"
                                         validate={[required]}
                                     ></Field>
                                 </Col>
@@ -214,46 +228,49 @@ class form extends React.Component {
                                 <Col lg="6"  className="input-wrap">
                                     <Field
                                         name="extendedKeyUsage"
-                                        component={renderSelectField}
-                                        label={"Ovlašćenja"}
-                                        placeholder="Unesite ovlašćenja"
+                                        component={renderMultiSelectField}
+                                        label={"Extended key usage"}
+                                        placeholder="Choose extended key usage"
                                         validate={[required]}
+                                        onChange={this.handleChange}
                                         id="extendedKeyUsage"
                                     > 
-                                        <option value="anyExtendedKeyUsage">Proširena ovlašćenja</option>
-                                        <option value="serverAuth">Serverska autentifikacija</option>
-                                        <option value="clientAuth">Klijentska autentifikacija</option>
-                                        <option value="codeSigning">Potpisivanje koda</option>
-                                        <option value="emailProtection">Zaštita email pošte</option>
+                                        <option value="anyExtendedKeyUsage">Any extended key usage</option>
+                                        <option value="serverAuth">Server authentifcation</option>
+                                        <option value="clientAuth">Client autentification</option>
+                                        <option value="codeSigning">Code signin</option>
+                                        <option value="emailProtection">Email protection</option>
                                         <option value="timeStamping">Time Stamping</option>
-                                        <option value="OCSPSigning">OCSP potpisivanje</option>
-                                        <option value="MicrosoftCertificateTrustListSigning">Potpisivanje liste poverenja sa Microsoft certifikatom</option>
-                                        <option value="MicrosoftEncryptedFileSystem">Microsoft šifrovani sistem datoteka</option>
+                                        <option value="OCSPSigning">OCSP signin</option>
+                                        <option value="MicrosoftCertificateTrustListSigning">Microsoft certificate trust list signing</option>
+                                        <option value="MicrosoftEncryptedFileSystem">Microsoft encrypted filesystem</option>
                                         </Field>
                                 </Col>
                                 <Col lg="6"  className="input-wrap">
                                     <Field
-                                        name="pathLengthConstraint"
+                                        name="basicConstraints.pathLengthConstraint"
                                         component={renderTextField}
-                                        label={"Moguć broj izdavanja CA sertifikata"}
+                                        label={"Path lenght constraint"}
                                         validate={[required]}
+                                        onChange={this.handleChange}
                                     ></Field>
                                 </Col>
                                 </Row>
                                 <Row>
                                 <Col lg="6"  className="input-wrap">
                                     <Field
-                                        name="isCA"
+                                        name="basicConstraints.isCA"
                                         component={renderCheckField}
-                                        label={"Da li je CA?"}
+                                        label={"is CA?"}
                                         validate={[required]}
+                                        onChange={this.handleChange}
                                     ></Field>
                                 </Col>
                                 </Row>
                         </Container>
                     </Col>
                     <Col lg="12">
-                        <button className="button">Save</button>
+                        <button className="button" >Save</button>
 
                     </Col>
                 </Row>
@@ -261,6 +278,7 @@ class form extends React.Component {
         )
     }
 }
+
 
 export default reduxForm({
     form: 'form'  // a unique identifier for this form
