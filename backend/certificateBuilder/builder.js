@@ -18,7 +18,12 @@ const { Certificate,
     InfoAccess,
     AccessDescription,
     GeneralName,
-    AuthorityKeyIdentifier
+    AuthorityKeyIdentifier,
+    OCSPRequest,
+    OCSPResponse,
+    BasicOCSPResponse,
+    ResponseBytes,
+    SingleResponse,
 } = require("pkijs")
 
 const nodeSpecificCrypto = require('./node-crypto');
@@ -33,21 +38,12 @@ function buf2ab(buffer) {
     return buf;
 }
 
-function hexStringToArrayBuffer(string) {
-    let buffer = [];
-    for (let i = 0; i < string.length; i += 2) {
-        buffer.push(parseInt(`${string[i]}${string[i + 1]}`, 16));
-    }
-    return buf2ab(buffer);
+function pemStringToArrayBuffer(pemString) {
+    return buf2ab(Buffer.from(pemString.replace('-----BEGIN CERTIFICATE-----', '').replace('-----END CERTIFICATE-----', '').replace(/\r/g, '').replace(/\n/g, ''), 'base64'));
 }
 
 
-
-
 function formatPEM(pemString) {
-    /// <summary>Format string in order to have each line with length equal to 63</summary>
-    /// <param name="pemString" type="String">String to format</param>
-
     const stringLength = pemString.length;
     let resultString = '';
 
@@ -149,7 +145,6 @@ function createCertificateInternal(params, parentCertificate, caPrivateKey) {
 
     let certificateBuffer = new ArrayBuffer(0); // ArrayBuffer with loaded or created CERT
     let privateKeyBuffer = new ArrayBuffer(0);
-    let trustedCertificates = [];
     //endregion
 
     //region Get a "crypto" extension 
@@ -366,7 +361,6 @@ function createCertificateInternal(params, parentCertificate, caPrivateKey) {
 
     //region Encode and store certificate 
     sequence = sequence.then(() => {
-        trustedCertificates.push(certificate);
         certificateBuffer = certificate.toSchema(true).toBER(false);
 
     }, error => Promise.reject(`Error during signing: ${error}`));
@@ -398,9 +392,7 @@ function createCertificateInternal(params, parentCertificate, caPrivateKey) {
 
 
 function generateCertificate(params, parentCertificate, parentPrivateKey) {
-    let parsedParentCertificate;
     if (parentCertificate) {
-        //parsedParentCertificate = parseCertificate(parentCertificate);
         return importPrivateKey(parentPrivateKey).then((privateKey) => {
             return createCertificateInternal(params, loadCertificate(parentCertificate), privateKey).then((result) => {
 
@@ -442,14 +434,11 @@ function generateCertificate(params, parentCertificate, parentPrivateKey) {
 
 
     }
-
-
-
 }
 
 
 function loadCertificate(cert) {
-    let certificateBuffer = buf2ab(Buffer.from(cert.replace('-----BEGIN CERTIFICATE-----', '').replace('-----END CERTIFICATE-----', '').replace(/\r/g, '').replace(/\n/g, ''), 'base64'));
+    let certificateBuffer = pemStringToArrayBuffer(cert);
     //region Initial check
     if (certificateBuffer.byteLength === 0) {
         console.log("Nothing to parse!");
@@ -465,29 +454,8 @@ function loadCertificate(cert) {
     return certificate;
 }
 
-function getPublicKey(cert) {
-    let certificateBuffer = buf2ab(Buffer.from(cert.replace('-----BEGIN CERTIFICATE-----', '').replace('-----END CERTIFICATE-----', '').replace(/\r/g, '').replace(/\n/g, ''), 'base64'));
-    //region Initial check
-    if (certificateBuffer.byteLength === 0) {
-        console.log("Nothing to parse!");
-        return;
-    }
-    //endregion
-
-    //region Decode existing X.509 certificate
-    const asn1 = asn1js.fromBER(certificateBuffer);
-    //console.log(asn1.result)
-    const certificate = new Certificate({ schema: asn1.result });
-    //endregion
-
-    return certificate.getPublicKey().then((res) => res);
-    //endregion
-}
-
-
-
 function parseCertificate(cert) {
-    let certificateBuffer = buf2ab(Buffer.from(cert.replace('-----BEGIN CERTIFICATE-----', '').replace('-----END CERTIFICATE-----', '').replace(/\r/g, '').replace(/\n/g, ''), 'base64'));
+    let certificateBuffer = pemStringToArrayBuffer(cert);
     let result = {
         issuer: {},
         subject: {},
@@ -501,45 +469,19 @@ function parseCertificate(cert) {
     }
     //endregion
 
-
-    const crypto = getCrypto();
-
     //region Decode existing X.509 certificate
     const asn1 = asn1js.fromBER(certificateBuffer);
     //console.log(asn1.result)
     const certificate = new Certificate({ schema: asn1.result });
     //endregion
 
-    //region Put information about X.509 certificate issuer
-    const rdnmap = {
-        "2.5.4.6": "C",
-        "2.5.4.10": "O",
-        "2.5.4.11": "OU",
-        "2.5.4.3": "CN",
-        "2.5.4.7": "L",
-        "2.5.4.8": "S",
-        "2.5.4.12": "T",
-        "2.5.4.42": "GN",
-        "2.5.4.43": "I",
-        "2.5.4.4": "SN",
-        "1.2.840.113549.1.9.1": "E-mail"
-    };
-
     for (const typeAndValue of certificate.issuer.typesAndValues) {
-        let typeval = rdnmap[typeAndValue.type];
-        if (typeof typeval === "undefined")
-            typeval = typeAndValue.type;
-
         result.issuer[issuerTypesRevMap[typeAndValue.type]] = typeAndValue.value.valueBlock.value;
     }
     //endregion
 
     //region Put information about X.509 certificate subject
     for (const typeAndValue of certificate.subject.typesAndValues) {
-        let typeval = rdnmap[typeAndValue.type];
-        if (typeof typeval === "undefined")
-            typeval = typeAndValue.type;
-
         result.subject[issuerTypesRevMap[typeAndValue.type]] = typeAndValue.value.valueBlock.value;
     }
     //endregion
@@ -663,10 +605,166 @@ function parseCertificate(cert) {
     //endregion
 }
 
+function generateOCSPRespose(certificatePEM, privateKeyPEM, intermediatePEM, ocspReqest, revoked = null) {
+    let issuerKeyHash, issuerNameHash;
+
+    const crypto = getCrypto();
+
+    const certificate = loadCertificate(certificatePEM);
+    const caCertificate = loadCertificate(intermediatePEM);
+    //region Initial variables
+    let sequence = Promise.resolve();
+
+    const ocspRespSimpl = new OCSPResponse();
+    const ocspBasicResp = new BasicOCSPResponse();
+
+    let privateKey;
+
+    sequence = sequence.then(() =>
+        importPrivateKey(privateKeyPEM),
+        error => Promise.reject(`Error during exporting public key: ${error}`));
+
+    sequence = sequence.then((result) => {
+        privateKey = result;
+    })
+
+    sequence = sequence.then(() =>
+        crypto.digest({ name: "SHA-1" }, caCertificate.subjectPublicKeyInfo.subjectPublicKey.valueBlock.valueHex),
+        error => Promise.reject(`Error during exporting public key: ${error}`));
+
+    sequence = sequence.then((result) => {
+        issuerKeyHash = result;
+    })
+
+    sequence = sequence.then(() =>
+        crypto.digest({ name: "SHA-1" }, caCertificate.subject.valueBeforeDecode),
+        error => Promise.reject(`Error during exporting public key: ${error}`));
+
+    sequence = sequence.then((result) => {
+        issuerNameHash = result;
+    });
+
+
+
+
+    //region Create specific TST info structure to sign
+    sequence = sequence.then(
+        () => {
+            ocspRespSimpl.responseStatus.valueBlock.valueDec = 0; // success
+            ocspRespSimpl.responseBytes = new ResponseBytes();
+            ocspRespSimpl.responseBytes.responseType = "1.3.6.1.5.5.7.48.1.1";
+
+            ocspBasicResp.tbsResponseData.responderID = certificate.issuer;
+            ocspBasicResp.tbsResponseData.producedAt = new Date();
+
+            const response = new SingleResponse();
+            response.certID.hashAlgorithm.algorithmId = "1.3.14.3.2.26"; // SHA-1
+            response.certID.issuerNameHash.valueBlock.valueHex = issuerNameHash; // Fiction hash
+            response.certID.issuerKeyHash.valueBlock.valueHex = issuerKeyHash; // Fiction hash
+            response.certID.serialNumber.valueBlock.valueDec = certificate.serialNumber.valueBlock.valueDec; // Fiction serial number
+
+
+            if (revoked) {
+                response.certStatus = new asn1js.Constructed({
+                    //name: (names.certStatus || ""),
+                    idBlock: {
+                        tagClass: 3, // CONTEXT-SPECIFIC
+                        tagNumber: 1 // [1]
+                    },
+                    value: [
+                        new asn1js.GeneralizedTime({ valueDate: revoked }),
+                        //null
+                    ]
+                });
+
+            } else {
+                response.certStatus = new asn1js.Primitive({
+                    idBlock: {
+                        tagClass: 3, // CONTEXT-SPECIFIC
+                        tagNumber: 0 // [0]
+                    },
+                    lenBlockLength: 1 // The length contains one byte 0x00
+                }); // status - success
+            }
+
+            response.thisUpdate = new Date();
+
+            ocspBasicResp.tbsResponseData.responses.push(response);
+
+            ocspBasicResp.certs = [certificate];
+
+            return ocspBasicResp.sign(privateKey, hashAlg);
+        }
+    );
+    //endregion
+
+    //region Finally create completed OCSP response structure
+    return sequence.then(
+        () => {
+            if (ocspReqest.serialNumber != certificate.serialNumber.valueBlock.valueDec) {
+                return {
+                    error: 'Wrong request'
+                };
+            }
+            if (ocspReqest.issuerKeyHash != bufferToHexCodes(issuerKeyHash)) {
+                return {
+                    error: 'Wrong request'
+                };
+            }
+            if (ocspReqest.issuerNameHash != bufferToHexCodes(issuerNameHash)) {
+                return {
+                    error: 'Wrong request'
+                };
+            }
+
+
+
+            const encodedOCSPBasicResp = ocspBasicResp.toSchema().toBER(false);
+            ocspRespSimpl.responseBytes.response = new asn1js.OctetString({ valueHex: encodedOCSPBasicResp });
+
+            return {
+                issuerKeyHash: issuerKeyHash,
+                issuerNameHash: issuerNameHash,
+                response: ocspRespSimpl.toSchema().toBER(false)
+            }
+        }
+    );
+    //endregion
+}
+
+function parseOCSPRequest(ocspReqBuffer) {
+    if (ocspReqBuffer.byteLength === 0) {
+        console.log("Nothing to parse!");
+        return;
+    }
+    //endregion 
+
+    //region Decode existing OCSP request
+    const asn1 = asn1js.fromBER(ocspReqBuffer);
+    const ocspReqSimpl = new OCSPRequest({ schema: asn1.result });
+    //endregion 
+
+    let res = [];
+    //region Put information about requests 
+    for (let i = 0; i < ocspReqSimpl.tbsRequest.requestList.length; i++) {
+        //console.log(ocspReqSimpl.tbsRequest.requestList[i].reqCert.issuerKeyHash.valueBlock.valueHex);
+        res.push({
+            serialNumber: ocspReqSimpl.tbsRequest.requestList[i].reqCert.serialNumber.valueBlock.valueDec,
+            issuerKeyHash: bufferToHexCodes(ocspReqSimpl.tbsRequest.requestList[i].reqCert.issuerKeyHash.valueBlock.valueHex),
+            issuerNameHash: bufferToHexCodes(ocspReqSimpl.tbsRequest.requestList[i].reqCert.issuerNameHash.valueBlock.valueHex)
+        })
+    }
+    return res;
+    //endregion 
+}
+
+
 
 module.exports = {
     generateCertificate: generateCertificate,
     parseCertificate: parseCertificate,
-    loadCertificate: loadCertificate
+    loadCertificate: loadCertificate,
+    generateOCSPRespose: generateOCSPRespose,
+    parseOCSPRequest: parseOCSPRequest
 }
 

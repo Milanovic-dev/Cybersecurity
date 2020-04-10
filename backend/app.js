@@ -8,7 +8,6 @@ const adminModule = new (require('./admin/admin'))();
 const {generateCertificate, parseCertificate} = require('./certificateBuilder/builder');
 const isAdminAuthenticated = require('./admin/auth');
 
-const exampleModule = new (require('./example/example'))();
 
 const app = express();
 app.use(cors());
@@ -40,24 +39,6 @@ app.post('/admin/verify', isAdminAuthenticated, (req, res) => {
 });
 
 
-/*
-    READ WRITE DB EXAMPLE
-
-*/
-
-app.get('/example/insert', async (req, res) => {
-    let result = await exampleModule.insert();
-    res.status(result.status).send(result.response);
-});
-
-app.get('/example/update/:id/:someValue', async (req, res) => {
-    let result = await exampleModule.update(req.params.id, req.params.someValue);
-    res.status(result.status).send(result.response);
-});
-
-app.get('/example/query', async (req, res) => {
-    res.status(200).send(await exampleModule.query());
-});
 
 app.get('/certificate/test', async (req, res) => {
     let cert = await getCertificateTest();
