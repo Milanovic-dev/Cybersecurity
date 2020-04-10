@@ -16,13 +16,13 @@ const CertificateService = {
 
             let result = await generateCertificate(certObject, parentObject.certificate, parentObject.privateKey); //[certificate, privateKey]
             let storeResult = await CertificateStore.storeAsync(result, parentId);
-            return {status: storeResult.status, response: storeResult.insertedId};
+            return {status: storeResult.status, response: { "insertedID": storeResult.insertedId }};
         }
         else
         {
             let result = await generateCertificate(certObject, null); //[certificate, privateKey]
             let storeResult = await CertificateStore.storeAsync(result, null);
-            return {status: storeResult.status, response: storeResult.insertedId};
+            return {status: storeResult.status, response: { "insertedID": storeResult.insertedId }};
         }
     },
     fetchCertificateAsync: async (id) => {
@@ -39,12 +39,10 @@ const CertificateService = {
             return { status: 500 };
         }
         
-        let rootObject = await CertificateStore.fetchAsync(root);
-        rootObject.children = result;
-        let status = rootObject.errorStatus ? rootObject.errorStatus : 200;
+        let status = result != undefined ? 200 : 404;
         return {
             status: status,
-            response: rootObject
+            response: result
         };
     },
     fetchCertificateTreesAsync: async () => {
@@ -57,15 +55,35 @@ const CertificateService = {
 
         return { status:200, response: ret };
     },
-    fetchUpToRootAsync: async (childId) => {
-        let result = await CertificateStore.fetchUpToRootAsync(childId);
+    fetchUpToRootAsync: async (childSerialNumber) => {
+        let result = await CertificateStore.fetchUpToRootAsync(childSerialNumber);
         return { status: 200, response: result };
     },
     removeAll: async () => {
         await CertificateStore.dropAsync();
         return { status: 200 };
+    },
+    revoke: async (id) => {
+        let tree = await CertificateStore.fetchTreeAsync(id);
+
+        try{
+            await revokeInternal(tree);
+            return { status:200 };
+        }
+        catch(err){
+            console.error(err);
+            return { status:400 };
+        }
     }
 }
 
+
+const revokeInternal = async (rootObject) => {
+    await CertificateStore.revokeOneAsync(rootObject.id.toString());
+
+    for(let i = 0 ; i < rootObject.children.length ; i++){
+        revokeInternal(rootObject.children[i].id);
+    }
+}
 
 export default CertificateService;
