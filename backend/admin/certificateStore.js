@@ -38,7 +38,7 @@ const store = async ({certificate, privateKey}, parentId) => {
         let result = await db.collection('certificates').insertOne({
             'certPath': cert_path,
             'pkPath': pk_path,
-            'serialNumber': certObj.serialNumber,
+            'serialNumber': parseInt(certObj.serialNumber, 10),
             'commonName': certObj.issuer.commonName,
             'parent': parentId,
             'revoked': null
@@ -158,7 +158,11 @@ const fetchRoots = async () => {
 }
 
 const fetchUpToRoot = async (serialNumber) => {
-    let current = await db.collection('certificates').findOne({"serialNumber": serialNumber});
+    let current = await db.collection('certificates').findOne({"serialNumber": parseInt(serialNumber,10)});
+    
+    if(current == null){
+        return null;
+    }
 
     let parent = current.parent;
     let ret = [fetchFromFiles(current)];
@@ -189,6 +193,12 @@ const fetchChildren = async (id) => {
     return children;
 }
 
+
+const fetchCount = async () => {
+    let count = await db.collection('certificates').count();
+    return count;
+}
+
 const CertificateStore = {
     storeAsync: store,
     fetchAsync: fetch,
@@ -197,7 +207,8 @@ const CertificateStore = {
     fetchRootsAsync: fetchRoots,
     fetchUpToRootAsync: fetchUpToRoot,
     revokeOneAsync : revokeOne,
-    fetchChildrenAsync: fetchChildren
+    fetchChildrenAsync: fetchChildren,
+    fetchCountAsync: fetchCount
 }
 
 export default CertificateStore;
