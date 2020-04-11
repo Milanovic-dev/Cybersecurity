@@ -605,7 +605,7 @@ function parseCertificate(cert) {
     //endregion
 }
 
-function generateOCSPRespose(certificatePEM, privateKeyPEM, intermediatePEM, ocspReqest, revoked = null) {
+function generateOCSPResponse(certificatePEM, privateKeyPEM, intermediatePEM, ocspReqest, revoked = null) {
     let issuerKeyHash, issuerNameHash;
 
     const crypto = getCrypto();
@@ -764,7 +764,7 @@ module.exports = {
     generateCertificate: generateCertificate,
     parseCertificate: parseCertificate,
     loadCertificate: loadCertificate,
-    generateOCSPRespose: generateOCSPRespose,
+    generateOCSPResponse: generateOCSPResponse,
     parseOCSPRequest: parseOCSPRequest
 }
 
