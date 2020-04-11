@@ -172,17 +172,21 @@ const fetchUpToRoot = async (serialNumber) => {
     return ret;
 }
 
-const revokeOne = async (id) => {
+const revokeOne = async (id, date) => {
     await db.collection('certificates').updateOne(
         {
             _id: ObjectID(id)
         },
         {
             $set: {
-                revoked: Math.floor(new Date().getTime()/ 1000)
+                revoked: date
             }
         })
+}
 
+const fetchChildren = async (id) => {
+    let children = await db.collection('certificates').find({"parent" : id}).sort({_id:-1}).toArray();
+    return children;
 }
 
 const CertificateStore = {
@@ -192,7 +196,8 @@ const CertificateStore = {
     dropAsync: drop,
     fetchRootsAsync: fetchRoots,
     fetchUpToRootAsync: fetchUpToRoot,
-    revokeOneAsync : revokeOne
+    revokeOneAsync : revokeOne,
+    fetchChildrenAsync: fetchChildren
 }
 
 export default CertificateStore;
