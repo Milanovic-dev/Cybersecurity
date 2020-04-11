@@ -33,6 +33,7 @@ class addCertificateForm extends Component {
             body: JSON.stringify(data)
         }).then((res) => res.json()).then((result) => {
             console.log(result);
+            this.props[0].history.push('/tree');
         });
     }
 

@@ -16,56 +16,35 @@ import {
 } from 'reactstrap';
 
 
-const Data =
-    [{
-        id: "root",
-        name: "Fruit",
-        children: [
-            {
-                id: "root1",
-                name: "Apple"
-            },
-            {
-                id: "root3",
-                name: "Banana",
-                children: [
-                    {
-                        id: "root4",
-                        name: "Cherry",
-                        children: []
-                        // loadOnDemand: true
-                    }
-                ]
-            }
-        ],
-    },
-    {
-        id: "root5",
-        name: "Vegetables",
-        children: [
-            {
-                id: "root6",
-                name: "Cabbage",
-                children: []
-            }
-        ]
-    }
-    ];
-
-
-
 
 class Tree extends Component {
 
     constructor(props) {
         super(props);
+        this.revoke = this.revoke.bind(this);
+        this.get = this.get.bind(this);
 
         this.state = {
             data: null
         }
     }
+    revoke(id){
+        // console.log(id);
+        fetch('http://127.0.0.1:4000/certificate/revoke/'+ id, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+        }).then((res) => this.get());
+
+    }
+   
 
     componentDidMount() {
+        this.get();
+    }
+    get(){
         fetch('http://127.0.0.1:4000/certificate/getAll', {
             method: 'GET',
             headers: {
@@ -148,7 +127,7 @@ class Tree extends Component {
                                                         node.state.selected ?
                                                             <span className="buttons">
                                                                 <Link to={`/certificate/${node.id}`}><button className="button-action preview">Pogledaj</button></Link>
-                                                                <button className="button-action space download">Povuci</button>
+                                                                <button onClick={() => this.revoke(node.id)} className="button-action space download">Povuci</button>
                                                                 <Link to={`/addCertificate/${node.id}`}><button className="button-action space create-new">Kreiraj</button></Link>
                                                             </span>
                                                             : null
