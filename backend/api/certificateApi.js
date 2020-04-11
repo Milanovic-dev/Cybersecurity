@@ -31,6 +31,7 @@ dbConnect()
 
     //PUT
     app.put('/certificate/revoke/:id', async (req, res) => {
+        console.log(req.params.id);
         let result = await CertificateService.revoke(req.params.id);
         res.status(result.status).send();
     });

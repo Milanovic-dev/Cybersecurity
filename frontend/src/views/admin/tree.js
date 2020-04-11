@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Link } from 'react-router-dom';
+import { Link, Redirect } from 'react-router-dom';
 import Isvg from 'react-inlinesvg';
 import Page from '../../containers/admin/page';
 import classNames from 'classnames';
@@ -16,56 +16,47 @@ import {
 } from 'reactstrap';
 
 
-const Data =
-    [{
-        id: "root",
-        name: "Fruit",
-        children: [
-            {
-                id: "root1",
-                name: "Apple"
-            },
-            {
-                id: "root3",
-                name: "Banana",
-                children: [
-                    {
-                        id: "root4",
-                        name: "Cherry",
-                        children: []
-                        // loadOnDemand: true
-                    }
-                ]
-            }
-        ],
-    },
-    {
-        id: "root5",
-        name: "Vegetables",
-        children: [
-            {
-                id: "root6",
-                name: "Cabbage",
-                children: []
-            }
-        ]
-    }
-    ];
-
-
-
 
 class Tree extends Component {
 
     constructor(props) {
         super(props);
+        this.revoke = this.revoke.bind(this);
+        this.restore = this.restore.bind(this);
+        this.get = this.get.bind(this);
 
         this.state = {
             data: null
         }
     }
+    revoke(id) {
+        // console.log(id);
+        fetch('http://127.0.0.1:4000/certificate/revoke/' + id, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+        }).then((res) => this.get());
+
+    }
+    restore(id) {
+        // fetch('http://127.0.0.1:4000/certificate/restore/' + id, {
+        //     method: 'PUT',
+        //     headers: {
+        //         'Content-Type': 'application/json',
+        //         'Authorization': `Bearer ${localStorage.getItem('token')}`
+        //     },
+        // }).then((res) => this.get());
+    }
+
 
     componentDidMount() {
+
+        this.get();
+    }
+    get() {
+
         fetch('http://127.0.0.1:4000/certificate/getAll', {
             method: 'GET',
             headers: {
@@ -84,6 +75,10 @@ class Tree extends Component {
 
         return (
             <div className="page-wrap">
+                {
+                    !localStorage.token ? <Redirect to='/login' /> : null
+                }
+                {/* <Container> */}
                 <Row>
                     <Col lg="12">
                         <h3 className="title">Hijerarhija sertifikata</h3>
@@ -95,44 +90,81 @@ class Tree extends Component {
                             {
                                 this.treeHeight ? */}
                         {
-                            this.state.data ? 
-                            <InfiniteTree className='tree' width="100%" height={1000} rowHeight={50} data={this.state.data}>
-                                {({ node, tree }) => {
-                                    // Determine the toggle state
-                                    let toggleState = "";
-                                    const hasChildren = node.hasChildren();
+                            this.state.data ?
+                                <InfiniteTree className='tree' width="100%" height={1000} rowHeight={50} data={this.state.data}>
+                                    {({ node, tree }) => {
+                                        // Determine the toggle state
+                                        let toggleState = "";
+                                        const hasChildren = node.hasChildren();
 
-                                    if (
-                                        (!hasChildren && node.loadOnDemand) ||
-                                        (hasChildren && !node.state.open)
-                                    ) {
-                                        toggleState = "closed";
-                                    }
-                                    if (hasChildren && node.state.open) {
-                                        toggleState = "opened";
-                                    }
+                                        if (
+                                            (!hasChildren && node.loadOnDemand) ||
+                                            (hasChildren && !node.state.open)
+                                        ) {
+                                            toggleState = "closed";
+                                        }
+                                        if (hasChildren && node.state.open) {
+                                            toggleState = "opened";
+                                        }
 
-                                    console.log(node.state);
+                                        console.log(node.state);
 
-                                    return (
-                                        <TreeNode
-                                            selected={node.state.selected}
-                                            depth={node.state.depth}
-                                            onClick={event => {
-                                                tree.selectNode(node);
+                                        return (
+                                            <TreeNode
+                                                selected={node.state.selected}
+                                                depth={node.state.depth}
+                                                onClick={event => {
+                                                    tree.selectNode(node);
 
-                                            }}
-
-                                        >
-                                            <Toggler
-                                                state={toggleState}
-                                                onClick={() => {
-                                                    if (toggleState === "closed") {
-                                                        tree.openNode(node);
-                                                    } else if (toggleState === "opened") {
-                                                        tree.closeNode(node);
-                                                    }
                                                 }}
+
+                                            >
+                                                <Toggler
+                                                    state={toggleState}
+                                                    onClick={() => {
+                                                        if (toggleState === "closed") {
+                                                            tree.openNode(node);
+                                                        } else if (toggleState === "opened") {
+                                                            tree.closeNode(node);
+                                                        }
+                                                    }}
+                                                />
+
+                                            
+                                                <span>
+                                                    {node.parsedCertificate.subject.commonName}
+                                                    {
+                                                        node.revoked != null ?
+                                                            <span className="revoked">(povucen)</span>
+                                                            : null
+                                                    }
+                                                </span>
+
+
+
+                                                {
+                                                    node.state.selected ?
+                                                        <span className="buttons">
+                                                            <Link to={`/certificate/${node.id}`}><button className="button-action preview">Pogledaj</button></Link>
+                                                            {
+                                                                node.revoked == null ?
+                                                                    <button onClick={() => this.revoke(node.id)} className="button-action space download">Povuci</button>
+                                                                    :
+                                                                    <button onClick={() => this.restore(node.id)} className="button-action space download">Vrati</button>
+                                                            }
+                                                            <Link to={`/addCertificate/${node.id}`}><button className="button-action space create-new">Kreiraj</button></Link>
+                                                        </span>
+                                                        : null
+                                                }
+
+
+
+                                            </TreeNode>
+                                        );
+                                    }}
+                                </InfiniteTree>
+                                : null
+
                                             />
 
 
@@ -155,13 +187,15 @@ class Tree extends Component {
                                 }}
                             </InfiniteTree>
                             : null
+
                         }
                         {/* : null
                             } */}
                         {/* </div> */}
                     </Col>
                 </Row>
-            </div>
+                {/* </Container> */}
+            </div >
         );
     }
 }
