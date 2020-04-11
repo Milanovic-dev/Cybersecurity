@@ -568,7 +568,11 @@ button{
 }
 .tree{
     padding-top: 3%;
-
+    .revoked{
+        font-style: italic;
+        font-size: 15px;
+        padding-left: 10px;
+    }
     
 }
 
