@@ -1,5 +1,6 @@
 const fs = require('fs');
 const {generateOCSPResponse, parseOCSPRequest} = require('../certificateBuilder/builder');
+const {fetchUpToRootAsync} = require('../admin/certificateStore');
 
 module.exports = function (app) {
     app.post('/ocsp/check', async (req, res) => {
@@ -11,13 +12,17 @@ module.exports = function (app) {
 
         console.log(request);
 
+        let chain = await fetchUpToRootAsync(request[0].serialNumber.toString());
+
+
         res.writeHead(200, [['Content-Type', 'application/ocsp-respose']]);
 
         let response = await generateOCSPResponse(
-            fs.readFileSync('./endEntity.crt', 'utf8'),
-            fs.readFileSync('./endEntity.key', 'utf8'),
-            fs.readFileSync('./intermediate.crt', 'utf8'),
-            request[0]
+            fs.readFileSync(chain[0].certPath, 'utf8'),
+            fs.readFileSync(chain[0].pkPath, 'utf8'),
+            fs.readFileSync(chain.length == 1 ? chain[0].certPath : chain[1].certPath, 'utf8'),
+            request[0],
+            chain[0].revoked
         );
 
         console.log(response);
