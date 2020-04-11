@@ -52,11 +52,9 @@ class Tree extends Component {
 
 
     componentDidMount() {
-
         this.get();
     }
     get() {
-
         fetch('http://127.0.0.1:4000/certificate/getAll', {
             method: 'GET',
             headers: {
@@ -164,30 +162,6 @@ class Tree extends Component {
                                     }}
                                 </InfiniteTree>
                                 : null
-
-                                            />
-
-
-                                            <span>
-                                                {node.parsedCertificate.subject.commonName}
-                                            </span>
-
-                                            {
-                                                node.state.selected ?
-                                                    <span className="buttons">
-                                                        <Link to={`/certificate/${node.id}`}><button className="button-action preview">Pogledaj</button></Link>
-                                                        <button className="button-action space download">Povuci</button>
-                                                        <Link to={`/addCertificate/${node.id}`}><button className="button-action space create-new">Kreiraj</button></Link>
-                                                    </span>
-                                                    : null
-                                            }
-
-                                        </TreeNode>
-                                    );
-                                }}
-                            </InfiniteTree>
-                            : null
-
                         }
                         {/* : null
                             } */}
@@ -195,7 +169,7 @@ class Tree extends Component {
                     </Col>
                 </Row>
                 {/* </Container> */}
-            </div >
+            </div > 
         );
     }
 }
