@@ -1,6 +1,17 @@
+import certificateStore from '../admin/certificateStore';
 const fs = require('fs');
 const {generateOCSPResponse, parseOCSPRequest} = require('../certificateBuilder/builder');
-const {fetchUpToRootAsync} = require('../admin/certificateStore');
+const moment = require('moment');
+
+function buf2ab(buffer) {
+    var buf = new ArrayBuffer(buffer.length); // 2 bytes for each char
+    var bufView = new Uint8Array(buf);
+    for (var i = 0, strLen = buffer.length; i < strLen; i++) {
+        bufView[i] = buffer[i];
+    }
+    return buf;
+}
+
 
 module.exports = function (app) {
     app.post('/ocsp/check', async (req, res) => {
@@ -12,17 +23,17 @@ module.exports = function (app) {
 
         console.log(request);
 
-        let chain = await fetchUpToRootAsync(request[0].serialNumber.toString());
-
+        let chain = await certificateStore.fetchUpToRootAsync(request[0].serialNumber.toString());
+        console.log(chain);
 
         res.writeHead(200, [['Content-Type', 'application/ocsp-respose']]);
 
         let response = await generateOCSPResponse(
-            fs.readFileSync(chain[0].certPath, 'utf8'),
-            fs.readFileSync(chain[0].pkPath, 'utf8'),
-            fs.readFileSync(chain.length == 1 ? chain[0].certPath : chain[1].certPath, 'utf8'),
+            chain[0].certificate,
+            chain[0].privateKey,
+            chain.length == 1 ? chain[0].certificate : chain[1].certificate,
             request[0],
-            chain[0].revoked
+            chain[0].revoked ? moment.unix(chain[0].revoked).toDate() : null 
         );
 
         console.log(response);
