@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import Page from '../../containers/admin/page';
 import Form from '../../components/forms/addCertificate';
+import { Link, Redirect } from 'react-router-dom';
+
 import {
     Container,
     Row,
@@ -37,6 +39,9 @@ class addCertificateForm extends Component {
     render() {
         return (
             <div className="page-wrap">
+                {
+                    !localStorage.token ? <Redirect to='/login' /> : null
+                }
                 <Container fluid>
                     <Row className="page-title">
                         <Col lg="12">

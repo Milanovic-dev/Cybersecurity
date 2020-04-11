@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Link } from 'react-router-dom';
+import { Link, Redirect } from 'react-router-dom';
 import Isvg from 'react-inlinesvg';
 import Page from '../../containers/admin/page';
 import CertViewForm from '../../components/forms/certViewForm';
@@ -125,6 +125,9 @@ class CertView extends Component {
     render() {
         return (
             <div className="page-wrap">
+                {
+                    !localStorage.token ? <Redirect to='/login' /> : null
+                }
                 
                 {
                     this.state.initialValues ?
