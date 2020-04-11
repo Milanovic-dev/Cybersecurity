@@ -57,7 +57,7 @@ dbConnect()
     });
 
     //DELETE
-    app.delete('/certificate/drop/', async (req, res) => {
+    app.delete('/certificate/drop', async (req, res) => {
         await CertificateService.removeAll();
         res.status(200).send();
     });

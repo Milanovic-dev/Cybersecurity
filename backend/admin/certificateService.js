@@ -67,9 +67,14 @@ const CertificateService = {
     },
     revoke: async (id) => {
         let tree = await CertificateStore.fetchTreeAsync(id);
-
+        let date = Math.floor(new Date().getTime()/ 1000)
         try{
-            await revokeInternal(tree);
+            await CertificateStore.revokeOneAsync(tree.id.toString(), date);
+
+            if(tree.children){
+                await revokeChildrenInternal(tree.id.toString(), date);
+            }
+
             return { status:200 };
         }
         catch(err){
@@ -80,12 +85,15 @@ const CertificateService = {
 }
 
 
-const revokeInternal = async (rootObject) => {
-    await CertificateStore.revokeOneAsync(rootObject.id.toString());
-
-    for(let i = 0 ; i < rootObject.children.length ; i++){
-        revokeInternal(rootObject.children[i].id);
+const revokeChildrenInternal = async (fromRoot, date) => {
+    let nodes = await CertificateStore.fetchChildrenAsync(fromRoot);
+    console.log(nodes.length);
+    for(let i = 0 ; i < nodes.length ; i++){
+        let id = nodes[i]._id.toString();
+        await CertificateStore.revokeOneAsync(id, date);
+        await revokeChildrenInternal(id);
     }
+
 }
 
 export default CertificateService;
