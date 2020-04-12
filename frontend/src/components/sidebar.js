@@ -21,13 +21,13 @@ class Sidebar extends Component {
                     <h6>Admin</h6>
                     <ul>
                         <li>
-                            <Link to='/admin/list' className={this.props[0].location.pathname === '/admin/list' ? 'active' : null}>
+                            <Link to='/tree' className={this.props[0].location.pathname === '/tree' ? 'active' : null}>
                                 <Isvg src={list} />
                                 All certificates
                             </Link>
                         </li>
                         <li>
-                            <Link to='/admin/list/new' className={this.props[0].location.pathname === '/admin/list/new' ? 'active' : null}>
+                            <Link to='/addCertificate' className={this.props[0].location.pathname === '/addCertificate' ? 'active' : null}>
                                 <Isvg src={add} />
                                 Create new sertificate
                             </Link>

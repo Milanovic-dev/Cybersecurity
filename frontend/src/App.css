@@ -962,6 +962,10 @@ button {
 
 .tree {
   padding-top: 3%; }
+  .tree .revoked {
+    font-style: italic;
+    font-size: 15px;
+    padding-left: 10px; }
 
 .title {
   font-size: 20px;

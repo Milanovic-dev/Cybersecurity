@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Redirect } from 'react-router-dom';
 import logo from '../../assets/images/logo.png';
 import bg from '../../assets/images/login-bg.png';
 import LoginForm from '../../components/forms/loginForm';
@@ -18,6 +18,28 @@ class LoginPage extends Component {
     }
 
     login(data) {
+
+        fetch('http://127.0.0.1:4000/admin/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                username: data.username,
+                password: data.password
+            })
+        }).then((res) => res.json()).then((result) => {
+            if (!result.error) {
+                localStorage.setItem('token', result.token);
+                this.props[0].history.push('/tree');
+            } else {
+                this.setState({
+                    error: result.error
+                })
+            }
+        })
+
+        /*
         if (data.type === 'admin') {
             fetch('http://127.0.0.1:4000/admin/login', {
                 method: 'POST',
@@ -33,16 +55,17 @@ class LoginPage extends Component {
 
                     let token = result.token;
 
-                    fetch('http://127.0.0.1:4000/admin/checkPasswordChange', {
-                        method: 'GET',
-                        headers: {
-                            'Authorization': `Bearer ${token}`
-                        },
-                    }).then((res) => res.json()).then((result) => {
+                    // fetch('http://127.0.0.1:4000/admin/checkPasswordChange', {
+                    //     method: 'GET',
+                    //     headers: {
+                    //         'Authorization': `Bearer ${token}`
+                    //     },
+                    // }).then((res) => res.json()).then((result) => {
 
-                        localStorage.setItem('token', token);
-                        this.props[0].history.push('/admin/changePassword')
-                    })
+                    //     localStorage.setItem('token', token);
+                    //     this.props[0].history.push('/admin/changePassword')
+                    // })
+                    this.props[0].history.push('/tree');
                 } else {
                     this.setState({
                         error: result.error
@@ -63,25 +86,26 @@ class LoginPage extends Component {
                 if (!result.error) {
                     let token = result.token;
 
-                    fetch('http://127.0.0.1:4000/admin/checkPasswordChangeCA', {
-                        method: 'GET',
-                        headers: {
-                            'Authorization': `Bearer ${token}`
-                        },
-                    }).then((res) => res.json()).then((result) => {
+                    // fetch('http://127.0.0.1:4000/admin/checkPasswordChangeCA', {
+                    //     method: 'GET',
+                    //     headers: {
+                    //         'Authorization': `Bearer ${token}`
+                    //     },
+                    // }).then((res) => res.json()).then((result) => {
 
                         
-                        localStorage.setItem('clinicAdminToken', token);
-                        if (result.required){
-                            this.props[0].history.push('/admin/changePasswordCA');
+                    //     localStorage.setItem('clinicAdminToken', token);
+                    //     if (result.required){
+                    //         this.props[0].history.push('/admin/changePasswordCA');
 
-                        }else{
-                            this.props[0].history.push('/clinic/users');
+                    //     }else{
+                    //         this.props[0].history.push('/clinic/users');
    
-                        }
+                    //     }
 
                        
-                    })
+                    // })
+                    this.props[0].history.push('/tree');
                 } else {
                     this.setState({
                         error: result.error
@@ -103,26 +127,26 @@ class LoginPage extends Component {
                 if (!result.error) {
                     let token = result.token;
 
-                    fetch('http://127.0.0.1:4000/admin/checkPasswordChangeDoc', {
-                        method: 'GET',
-                        headers: {
-                            'Authorization': `Bearer ${token}`
-                        },
-                    }).then((res) => res.json()).then((result) => {
+                    // fetch('http://127.0.0.1:4000/admin/checkPasswordChangeDoc', {
+                    //     method: 'GET',
+                    //     headers: {
+                    //         'Authorization': `Bearer ${token}`
+                    //     },
+                    // }).then((res) => res.json()).then((result) => {
 
                         
-                        localStorage.setItem('clinicUserToken', token);
-                        if (result.required){
-                            this.props[0].history.push('/doctor/changePassword');
+                    //     localStorage.setItem('clinicUserToken', token);
+                    //     if (result.required){
+                    //         this.props[0].history.push('/doctor/changePassword');
 
-                        }else{
-                            this.props[0].history.push('/doctor');
+                    //     }else{
+                    //         this.props[0].history.push('/doctor');
    
-                        }
+                    //     }
 
                        
-                    })
-
+                    // })
+                    this.props[0].history.push('/tree');
                 } else {
                     this.setState({
                         error: result.error
@@ -152,6 +176,7 @@ class LoginPage extends Component {
             })
     
         }
+        */
 
     }
 
@@ -161,6 +186,9 @@ class LoginPage extends Component {
 
         return (
             <div className="login-page">
+                {
+                    (localStorage.token) ? <Redirect to='/tree' /> : null
+                }
                 <Container className="block-wrap">
                     <Row>
                         <Col lg="12">
