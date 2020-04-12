@@ -115,9 +115,9 @@ const fetchFromFiles = (dbCertificateObject) => {
 
     return {
         id: dbCertificateObject._id,
-       // parsedCertificate: parseCertificate(certificate), 
-        //certificate: certificate,
-        //privateKey: privateKey, 
+        parsedCertificate: parseCertificate(certificate), 
+        certificate: certificate,
+        privateKey: privateKey, 
         parent: dbCertificateObject.parent,
         revoked: dbCertificateObject.revoked
     };
