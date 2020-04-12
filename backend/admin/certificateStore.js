@@ -115,9 +115,9 @@ const fetchFromFiles = (dbCertificateObject) => {
 
     return {
         id: dbCertificateObject._id,
-        parsedCertificate: parseCertificate(certificate), 
-        certificate: certificate,
-        privateKey: privateKey, 
+       // parsedCertificate: parseCertificate(certificate), 
+        //certificate: certificate,
+        //privateKey: privateKey, 
         parent: dbCertificateObject.parent,
         revoked: dbCertificateObject.revoked
     };
@@ -188,6 +188,18 @@ const revokeOne = async (id, date) => {
         })
 }
 
+const restoreOne = async (id) => {
+    await db.collection('certificates').updateOne(
+        {
+            _id: ObjectID(id)
+        },
+        {
+            $set: {
+                revoked: null
+            }
+        })
+}
+
 const fetchChildren = async (id) => {
     let children = await db.collection('certificates').find({"parent" : id}).sort({_id:-1}).toArray();
     return children;
@@ -207,6 +219,7 @@ const CertificateStore = {
     fetchRootsAsync: fetchRoots,
     fetchUpToRootAsync: fetchUpToRoot,
     revokeOneAsync : revokeOne,
+    restoreOneAsync : restoreOne,
     fetchChildrenAsync: fetchChildren,
     fetchCountAsync: fetchCount
 }
