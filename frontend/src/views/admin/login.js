@@ -192,11 +192,6 @@ class LoginPage extends Component {
                 <Container className="block-wrap">
                     <Row>
                         <Col lg="12">
-                            <div className="logo">
-                                <img src={logo} />
-                            </div>
-                        </Col>
-                        <Col lg="12">
                             <Container>
                                 <Row className="login-container">
                                     <Col lg="6" xs="12" className="login-bg">
@@ -218,7 +213,6 @@ class LoginPage extends Component {
                                                     null
                                             }
 
-                                            <Link to='/patient/register'>Registruj se</Link>
                                         </Container>
                                     </Col>
                                 </Row>

@@ -9,6 +9,9 @@ import ReactDOM from "react-dom";
 import TreeNode from "./TreeNode";
 import Toggler from "./Toggler";
 
+
+import certificateIcon from '../../assets/svg/certificate.svg';
+
 import {
     Container,
     Row,
@@ -117,45 +120,46 @@ class Tree extends Component {
                                                 }}
 
                                             >
-                                                <Toggler
-                                                    state={toggleState}
-                                                    onClick={() => {
-                                                        if (toggleState === "closed") {
-                                                            tree.openNode(node);
-                                                        } else if (toggleState === "opened") {
-                                                            tree.closeNode(node);
-                                                        }
-                                                    }}
-                                                />
+                                                <div className={node.state.selected ? "certificate-selected" : ""}>
+                                                    <Toggler
+                                                        state={toggleState}
+                                                        onClick={() => {
+                                                            if (toggleState === "closed") {
+                                                                tree.openNode(node);
+                                                            } else if (toggleState === "opened") {
+                                                                tree.closeNode(node);
+                                                            }
+                                                        }}
+                                                    />
 
-                                            
-                                                <span>
-                                                    {node.parsedCertificate.subject.commonName}
+
+                                                    <span className="certificate-name">
+                                                        <Isvg src={certificateIcon} />   {node.parsedCertificate.subject.commonName}
+                                                        {
+                                                            node.revoked != null ?
+                                                                <span className="revoked">(povucen)</span>
+                                                                : null
+                                                        }
+                                                    </span>
+
+
+
                                                     {
-                                                        node.revoked != null ?
-                                                            <span className="revoked">(povucen)</span>
+                                                        node.state.selected ?
+                                                            <span className="buttons">
+                                                                <Link to={`/certificate/${node.id}`}><button className="button-action preview">Pogledaj</button></Link>
+                                                                {
+                                                                    node.revoked == null ?
+                                                                        <button onClick={() => this.revoke(node.id)} className="button-action space download">Povuci</button>
+                                                                        :
+                                                                        <button onClick={() => this.restore(node.id)} className="button-action space download">Vrati</button>
+                                                                }
+                                                                <Link to={`/addCertificate/${node.id}`}><button className="button-action space create-new">Kreiraj</button></Link>
+                                                            </span>
                                                             : null
                                                     }
-                                                </span>
 
-
-
-                                                {
-                                                    node.state.selected ?
-                                                        <span className="buttons">
-                                                            <Link to={`/certificate/${node.id}`}><button className="button-action preview">Pogledaj</button></Link>
-                                                            {
-                                                                node.revoked == null ?
-                                                                    <button onClick={() => this.revoke(node.id)} className="button-action space download">Povuci</button>
-                                                                    :
-                                                                    <button onClick={() => this.restore(node.id)} className="button-action space download">Vrati</button>
-                                                            }
-                                                            <Link to={`/addCertificate/${node.id}`}><button className="button-action space create-new">Kreiraj</button></Link>
-                                                        </span>
-                                                        : null
-                                                }
-
-
+                                                </div>
 
                                             </TreeNode>
                                         );
@@ -169,7 +173,7 @@ class Tree extends Component {
                     </Col>
                 </Row>
                 {/* </Container> */}
-            </div > 
+            </div >
         );
     }
 }

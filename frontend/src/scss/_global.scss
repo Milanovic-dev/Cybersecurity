@@ -690,3 +690,21 @@ button{
 
     }
 }
+
+.certificate-name{
+    svg{
+        width: 30px;
+        margin-right: 16px;
+    }
+}
+
+.certificate-selected{
+    //background-color: $darkGray;
+    color: $blue;
+
+    svg{
+        path, line, rect{
+            fill: $blue;
+        }
+    }
+}
