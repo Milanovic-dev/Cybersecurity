@@ -40,17 +40,22 @@ class Tree extends Component {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
             },
-        }).then((res) => this.get());
+        }).then((res) => {
+            window.location.reload();
+
+        });
 
     }
     restore(id) {
-        // fetch('http://127.0.0.1:4000/certificate/restore/' + id, {
-        //     method: 'PUT',
-        //     headers: {
-        //         'Content-Type': 'application/json',
-        //         'Authorization': `Bearer ${localStorage.getItem('token')}`
-        //     },
-        // }).then((res) => this.get());
+         fetch('http://127.0.0.1:4000/certificate/restore/' + id, {
+             method: 'PUT',
+             headers: {
+                'Content-Type': 'application/json',
+                 'Authorization': `Bearer ${localStorage.getItem('token')}`
+             },
+         }).then((res) => {
+             window.location.reload();
+         });
     }
 
 
