@@ -1,6 +1,6 @@
 const express = require("express");
-const http = require("http");
 const port = process.env.PORT || 4000;
+const ocspPort = 8080
 const cors = require('cors')
 const bodyParser = require("body-parser");
 const fs = require("fs");
@@ -15,14 +15,33 @@ app.use(bodyParser.json({ limit: '20mb' }));
 app.use('/uploads', express.static('uploads'))
 app.use(bodyParser.raw({
     type: function (req) { return req.headers['content-type'] === 'application/ocsp-request' },
-  }))
-  
-const server = http.createServer(app);
+}))
 
+const options = {
+    ca: [fs.readFileSync('intermediate.crt'), fs.readFileSync('root.crt')],
+    cert: fs.readFileSync('endEntity.crt'),
+    key: fs.readFileSync('endEntity.key')
+};
+
+const https = require("https");
+const server = https.createServer(options, app);
 const api = require('./api/certificateApi') (app);
-const ocspApi = require('./ocsp/ocsp')(app);
+server.listen(port, () => console.log(`Server Listening on port ${port}`));
 
-server.listen(port, () => console.log(`Listening on port ${port}`));
+
+const appOCSP = express();
+appOCSP.use(cors());
+appOCSP.use(bodyParser.json({ limit: '20mb' }));
+appOCSP.use('/uploads', express.static('uploads'))
+appOCSP.use(bodyParser.raw({
+    type: function (req) { return req.headers['content-type'] === 'application/ocsp-request' },
+}))
+const httpOCSP = require('http');
+const serverOCSP = httpOCSP.createServer(appOCSP);
+const ocspApi = require('./ocsp/ocsp')(appOCSP);
+serverOCSP.listen(ocspPort, () => console.log(`OCSP Server listening on port ${ocspPort}`))
+
+
 
 /*
     ADMIN API ROUTES
@@ -39,14 +58,13 @@ app.post('/admin/verify', isAdminAuthenticated, (req, res) => {
 });
 
 
-
 app.get('/certificate/test', async (req, res) => {
     let cert = await getCertificateTest();
     res.status(200).send(parseCertificate(cert.certificate));
 });
 
-
-/*async function test(){
+/*
+async function test(){
     let rootResult = await generateCertificate({
         serialNumber: 1,
         issuer: {
