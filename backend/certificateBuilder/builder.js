@@ -639,17 +639,12 @@ function parseOCSPRequest(ocspReqBuffer) {
         console.log("Nothing to parse!");
         return;
     }
-    //endregion 
 
-    //region Decode existing OCSP request
     const asn1 = asn1js.fromBER(ocspReqBuffer);
     const ocspReqSimpl = new OCSPRequest({ schema: asn1.result });
-    //endregion 
 
     let res = [];
-    //region Put information about requests 
     for (let i = 0; i < ocspReqSimpl.tbsRequest.requestList.length; i++) {
-        //console.log(ocspReqSimpl.tbsRequest.requestList[i].reqCert.issuerKeyHash.valueBlock.valueHex);
         res.push({
             serialNumber: ocspReqSimpl.tbsRequest.requestList[i].reqCert.serialNumber.valueBlock.valueDec,
             issuerKeyHash: bufferToHexCodes(ocspReqSimpl.tbsRequest.requestList[i].reqCert.issuerKeyHash.valueBlock.valueHex),
@@ -657,7 +652,6 @@ function parseOCSPRequest(ocspReqBuffer) {
         })
     }
     return res;
-    //endregion 
 }
 
 
