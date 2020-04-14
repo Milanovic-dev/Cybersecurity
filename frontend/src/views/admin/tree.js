@@ -159,8 +159,12 @@ class Tree extends Component {
                                                                         :
                                                                         <button onClick={() => this.restore(node.id)} className="button-action space download">Vrati</button>
                                                                 }
+                                                                { node.parsedCertificate.extensions && node.parsedCertificate.extensions['2.5.29.19'] && node.parsedCertificate.extensions['2.5.29.19'].value && node.parsedCertificate.extensions['2.5.29.19'].value.isCA ?
                                                                 <Link to={`/addCertificate/${node.id}`}><button className="button-action space create-new">Kreiraj</button></Link>
-                                                            </span>
+                                                                    :
+                                                                    null
+                                                                }
+                                                                </span>
                                                             : null
                                                     }
 
