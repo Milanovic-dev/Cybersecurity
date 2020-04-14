@@ -2,7 +2,7 @@ const WebCrypto = require('node-webcrypto-ossl');
 import { bufferToHexCodes } from "pvutils";
 
 const asn1js = require("asn1js");
-const {hashAlg,signAlg,issuerTypesRevMap,extendedKeyUsageMap,extendedKeyUsageRevMap,algomap} = require("./constants");
+const {issuerTypesMap, hashAlg,signAlg,issuerTypesRevMap,extendedKeyUsageMap,extendedKeyUsageRevMap,algomap} = require("./constants");
 const {pemStringToArrayBuffer,formatPEM,importPrivateKey} = require("./parse");
 
 const { Certificate,
@@ -104,18 +104,34 @@ function createCertificateInternal(params, parentCertificate, caPrivateKey) {
     certificate.extensions = []; // Extensions are not a part of certificate by default, it's an optional array
 
     //region "BasicConstraints" extension
-    const basicConstr = new BasicConstraints({
-        cA: params.basicConstraints.isCA,
-        pathLenConstraint: params.basicConstraints.pathLengthConstraint
-    });
-
-    certificate.extensions.push(new Extension({
-        extnID: "2.5.29.19",
-        critical: true,
-        extnValue: basicConstr.toSchema().toBER(false),
-        parsedValue: basicConstr // Parsed value for well-known extensions
-    }));
-    //endregion 
+    if (!params.basicConstraints){
+        const basicConstr = new BasicConstraints({
+            cA: false,
+            pathLenConstraint: null
+        });
+    
+        certificate.extensions.push(new Extension({
+            extnID: "2.5.29.19",
+            critical: true,
+            extnValue: basicConstr.toSchema().toBER(false),
+            parsedValue: basicConstr // Parsed value for well-known extensions
+        }));
+        //endregion 
+    
+    }else {
+        const basicConstr = new BasicConstraints({
+            cA: params.basicConstraints.isCA,
+            pathLenConstraint: params.basicConstraints.pathLengthConstraint
+        });
+    
+        certificate.extensions.push(new Extension({
+            extnID: "2.5.29.19",
+            critical: true,
+            extnValue: basicConstr.toSchema().toBER(false),
+            parsedValue: basicConstr // Parsed value for well-known extensions
+        }));
+        //endregion 
+    }
 
     //region "KeyUsage" extension 
     const bitArray = new ArrayBuffer(1);

@@ -132,13 +132,13 @@ class form extends React.Component {
                                 </Col>
                                 <Col lg="12" className="space-bottom">
                                     <p>Extension ID: <span className="black">{this.props.initialValues.parsedCertificate.extensions["2.5.29.14"].extnID}</span></p>
-                                    <p>Name: <span className="black">{this.props.initialValues.parsedCertificate.extensions["2.5.29.15"].name}</span></p>
-                                    <p>Value: <span className="black">{JSON.stringify(this.props.initialValues.parsedCertificate.extensions["2.5.29.15"].value)}</span></p>
+                                    <p>Name: <span className="black">{this.props.initialValues.parsedCertificate.extensions["2.5.29.14"].name}</span></p>
+                                    <p>Value: <span className="black">{JSON.stringify(this.props.initialValues.parsedCertificate.extensions["2.5.29.14"].value)}</span></p>
                                 </Col>
                                 <Col lg="12" className="space-bottom">
                                     <p>Extension ID: <span className="black">{this.props.initialValues.parsedCertificate.extensions["2.5.29.35"].extnID}</span></p>
-                                    <p>Name: <span className="black">{this.props.initialValues.parsedCertificate.extensions["2.5.29.15"].name}</span></p>
-                                    <p>Value: <span className="black">{JSON.stringify(this.props.initialValues.parsedCertificate.extensions["2.5.29.15"].value)}</span></p>
+                                    <p>Name: <span className="black">{this.props.initialValues.parsedCertificate.extensions["2.5.29.35"].name}</span></p>
+                                    <p>Value: <span className="black">{JSON.stringify(this.props.initialValues.parsedCertificate.extensions["2.5.29.35"].value)}</span></p>
                                 </Col>
                             </Row>
                             <Row>

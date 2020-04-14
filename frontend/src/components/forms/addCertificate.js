@@ -258,7 +258,6 @@ class form extends React.Component {
                                         name="basicConstraints.pathLengthConstraint"
                                         component={renderTextField}
                                         label={"Path lenght constraint"}
-                                        validate={[required]}
                                         onChange={this.handleChange}
                                     ></Field>
                                 </Col>
@@ -269,7 +268,6 @@ class form extends React.Component {
                                         name="basicConstraints.isCA"
                                         component={renderCheckField}
                                         label={"is CA?"}
-                                        validate={[required]}
                                         onChange={this.handleChange}
                                     ></Field>
                                 </Col>
