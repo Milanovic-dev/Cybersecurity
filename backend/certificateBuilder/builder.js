@@ -165,7 +165,7 @@ function createCertificateInternal(params, parentCertificate, caPrivateKey) {
                     accessLocation: new GeneralName({
                         schema: (new GeneralName({
                             type: 6,
-                            value: "http://localhost:4000/ocsp/check"//"test"//new asn1js.Utf8String({ value: "certType" })
+                            value: "http://localhost:8080/ocsp/check"//"test"//new asn1js.Utf8String({ value: "certType" })
                         })).toSchema()
                     })
                 })).toSchema()
