@@ -19,7 +19,7 @@ const store = async ({certificate, privateKey}, parentId) => {
     let pkUuid = uuidv4();
 
     let cert_path = 'certificates/'+ certUuid + '.cert';
-    let pk_path = 'privateKeys/'+ pkUuid + '.pk'
+    let pk_path = 'privateKeys/'+ pkUuid + '.key'
 
     if(!fs.existsSync('certificates')){
         fs.mkdir('certificates');
