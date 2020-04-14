@@ -19,7 +19,7 @@ class LoginPage extends Component {
 
     login(data) {
 
-        fetch('http://localhost:4000/admin/login', {
+        fetch('https://localhost:4000/admin/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

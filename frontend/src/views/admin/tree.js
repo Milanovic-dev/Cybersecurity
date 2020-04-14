@@ -34,7 +34,7 @@ class Tree extends Component {
     }
     revoke(id) {
         // console.log(id);
-        fetch('http://localhost:4000/certificate/revoke/' + id, {
+        fetch('https://localhost:4000/certificate/revoke/' + id, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -47,7 +47,7 @@ class Tree extends Component {
 
     }
     restore(id) {
-         fetch('http://localhost:4000/certificate/restore/' + id, {
+         fetch('https://localhost:4000/certificate/restore/' + id, {
              method: 'PUT',
              headers: {
                 'Content-Type': 'application/json',
@@ -63,7 +63,7 @@ class Tree extends Component {
         this.get();
     }
     get() {
-        fetch('http://localhost:4000/certificate/getAll', {
+        fetch('https://localhost:4000/certificate/getAll', {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',

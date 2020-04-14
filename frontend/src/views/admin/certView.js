@@ -21,7 +21,7 @@ class CertView extends Component {
     componentDidMount() {
         console.log(this.props[0].match.params.id);
 
-        fetch('http://localhost:4000/certificate/getOne/' + this.props[0].match.params.id, {
+        fetch('https://localhost:4000/certificate/getOne/' + this.props[0].match.params.id, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -90,7 +90,7 @@ class CertView extends Component {
                             "accessMethod": "1.3.6.1.5.5.7.48.1",
                             "accessLocation": {
                                 "type": 6,
-                                "value": "http://localhost:4000"
+                                "value": "https://localhost:4000"
                             }
                         }
                     ]
