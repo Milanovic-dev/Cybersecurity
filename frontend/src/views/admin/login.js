@@ -19,7 +19,7 @@ class LoginPage extends Component {
 
     login(data) {
 
-        fetch('http://127.0.0.1:4000/admin/login', {
+        fetch('http://localhost:4000/admin/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -41,7 +41,7 @@ class LoginPage extends Component {
 
         /*
         if (data.type === 'admin') {
-            fetch('http://127.0.0.1:4000/admin/login', {
+            fetch('http://localhost:4000/admin/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -55,7 +55,7 @@ class LoginPage extends Component {
 
                     let token = result.token;
 
-                    // fetch('http://127.0.0.1:4000/admin/checkPasswordChange', {
+                    // fetch('http://localhost:4000/admin/checkPasswordChange', {
                     //     method: 'GET',
                     //     headers: {
                     //         'Authorization': `Bearer ${token}`
@@ -73,7 +73,7 @@ class LoginPage extends Component {
                 }
             })
         }else if (data.type === 'clinicAdmin'){
-            fetch('http://127.0.0.1:4000/clinic/admin/login', {
+            fetch('http://localhost:4000/clinic/admin/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -86,7 +86,7 @@ class LoginPage extends Component {
                 if (!result.error) {
                     let token = result.token;
 
-                    // fetch('http://127.0.0.1:4000/admin/checkPasswordChangeCA', {
+                    // fetch('http://localhost:4000/admin/checkPasswordChangeCA', {
                     //     method: 'GET',
                     //     headers: {
                     //         'Authorization': `Bearer ${token}`
@@ -114,7 +114,7 @@ class LoginPage extends Component {
             })
     
         }else if (data.type === 'clinicUser'){
-            fetch('http://127.0.0.1:4000/clinic/user/login', {
+            fetch('http://localhost:4000/clinic/user/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -127,7 +127,7 @@ class LoginPage extends Component {
                 if (!result.error) {
                     let token = result.token;
 
-                    // fetch('http://127.0.0.1:4000/admin/checkPasswordChangeDoc', {
+                    // fetch('http://localhost:4000/admin/checkPasswordChangeDoc', {
                     //     method: 'GET',
                     //     headers: {
                     //         'Authorization': `Bearer ${token}`
@@ -155,7 +155,7 @@ class LoginPage extends Component {
             })
     
         }else if (data.type === 'patient'){
-            fetch('http://127.0.0.1:4000/patient/login', {
+            fetch('http://localhost:4000/patient/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

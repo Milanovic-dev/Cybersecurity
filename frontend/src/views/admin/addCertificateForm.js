@@ -23,7 +23,7 @@ class addCertificateForm extends Component {
     add(data){
         data.serialNumber = 1;
         console.log(data);
-        let url = this.props[0].match.params.parentId ? 'http://127.0.0.1:4000/certificate/create/' + this.props[0].match.params.parentId : 'http://127.0.0.1:4000/certificate/createRoot';
+        let url = this.props[0].match.params.parentId ? 'http://localhost:4000/certificate/create/' + this.props[0].match.params.parentId : 'http://localhost:4000/certificate/createRoot';
         fetch(url, {
             method: 'POST',
             headers: {
