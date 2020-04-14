@@ -1,4 +1,3 @@
-
 const buf2ab = (buffer) => {
   var buf = new ArrayBuffer(buffer.length); // 2 bytes for each char
   var bufView = new Uint8Array(buf);
@@ -6,11 +5,11 @@ const buf2ab = (buffer) => {
       bufView[i] = buffer[i];
   }
   return buf;
-}
+};
 
 const pemStringToArrayBuffer = (pemString) => {
   return buf2ab(Buffer.from(pemString.replace('-----BEGIN CERTIFICATE-----', '').replace('-----END CERTIFICATE-----', '').replace(/\r/g, '').replace(/\n/g, ''), 'base64'));
-}
+};
 
 
 const formatPEM = (pemString) => {
@@ -27,7 +26,7 @@ const formatPEM = (pemString) => {
   }
 
   return resultString;
-}
+};
 
 const importPrivateKey = (cert) => {
   return new Promise(function (resolve) {
@@ -44,4 +43,12 @@ const importPrivateKey = (cert) => {
           resolve(key)
       })
   })
+};
+
+module.exports = {
+  buf2ab: buf2buf,
+  pemStringToArrayBuffer: pemStringToArrayBuffer,
+  formatPEM: formatPEM,
+  importPrivateKey: importPrivateKey
+
 }
