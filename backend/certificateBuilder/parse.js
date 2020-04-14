@@ -46,7 +46,7 @@ const importPrivateKey = (cert) => {
 };
 
 module.exports = {
-  buf2ab: buf2buf,
+  buf2ab: buf2ab,
   pemStringToArrayBuffer: pemStringToArrayBuffer,
   formatPEM: formatPEM,
   importPrivateKey: importPrivateKey
