@@ -142,7 +142,7 @@ class Tree extends Component {
                                                         <Isvg src={certificateIcon} />   {node.parsedCertificate.subject.commonName}
                                                         {
                                                             node.revoked != null ?
-                                                                <span className="revoked">(povucen)</span>
+                                                                <span className="revoked">(nije validan)</span>
                                                                 : null
                                                         }
                                                     </span>

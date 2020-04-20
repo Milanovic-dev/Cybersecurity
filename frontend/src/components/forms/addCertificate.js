@@ -242,7 +242,7 @@ class form extends React.Component {
                                         onChange={this.handleChange}
                                         id="extendedKeyUsage"
                                     >
-                                        <option value="anyExtendedKeyUsage">Any extended key usage</option>
+                                        {/* <option value="anyExtendedKeyUsage">Any extended key usage</option>
                                         <option value="serverAuth">Server authentifcation</option>
                                         <option value="clientAuth">Client autentification</option>
                                         <option value="codeSigning">Code signin</option>
@@ -250,7 +250,12 @@ class form extends React.Component {
                                         <option value="timeStamping">Time Stamping</option>
                                         <option value="OCSPSigning">OCSP signin</option>
                                         <option value="MicrosoftCertificateTrustListSigning">Microsoft certificate trust list signing</option>
-                                        <option value="MicrosoftEncryptedFileSystem">Microsoft encrypted filesystem</option>
+                                        <option value="MicrosoftEncryptedFileSystem">Microsoft encrypted filesystem</option> */}
+                                        {this.props.extensions && this.props.extensions.map((item, idx) => {
+                                            return (
+                                                <option value={item.name}>{item.text}</option>
+                                            )
+                                        })}
                                     </Field>
                                 </Col>
                                 <Col lg="6" className="input-wrap">
