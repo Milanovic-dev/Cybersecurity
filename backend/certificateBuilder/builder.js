@@ -407,7 +407,7 @@ function parseCertificate(cert) {
 
     result.serialNumber = bufferToHexCodes(certificate.serialNumber.valueBlock.valueHex);
     result.validFrom = certificate.notBefore.value;
-    result.validTo = certificate.notBefore.value;
+    result.validTo = certificate.notAfter.value;
 
     //region Put information about subject public key size
     let publicKeySize = "< unknown >";
