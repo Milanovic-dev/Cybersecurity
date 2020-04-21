@@ -27,6 +27,7 @@ class Tree extends Component {
         this.revoke = this.revoke.bind(this);
         this.restore = this.restore.bind(this);
         this.get = this.get.bind(this);
+        // this.check = this.check.bind(this);
 
         this.state = {
             data: null
@@ -47,15 +48,15 @@ class Tree extends Component {
 
     }
     restore(id) {
-         fetch('https://localhost:4000/certificate/restore/' + id, {
-             method: 'PUT',
-             headers: {
+        fetch('https://localhost:4000/certificate/restore/' + id, {
+            method: 'PUT',
+            headers: {
                 'Content-Type': 'application/json',
-                 'Authorization': `Bearer ${localStorage.getItem('token')}`
-             },
-         }).then((res) => {
-             window.location.reload();
-         });
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+        }).then((res) => {
+            window.location.reload();
+        });
     }
 
 
@@ -70,12 +71,32 @@ class Tree extends Component {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
             },
         }).then((res) => res.json()).then((result) => {
+            // let obj = [];
+
+            // console.log(result);
+            // for (let i = 0; i < result.length; i++) {
+            //     if(this.check(result[i])){
+            //         obj.push(result[i]);
+            //     }
+            // }
+
             this.setState({
                 data: result
             });
-            console.log(result);
+
         });
     }
+    // check(cert) {
+    //     let today = new Date();
+    //     let today_ts = Math.floor(today.getTime() / 1000);
+    //     let valid_to_ts = Math.floor(new Date(cert.parsedCertificate.validTo).getTime() / 1000);
+    //     if(today_ts > valid_to_ts){
+    //         return false;
+    //     }else{
+    //         return true;
+    //     }
+    // }
+
 
     render() {
 
@@ -87,14 +108,12 @@ class Tree extends Component {
                 {/* <Container> */}
                 <Row>
                     <Col lg="12">
-                        <h3 className="title">Hijerarhija sertifikata</h3>
+                        <h3 className="title">Certificate hierarchy</h3>
                     </Col>
                 </Row>
                 <Row>
                     <Col lg='12'>
-                        {/* <div style={{height: "100%"}} ref={(node) => { if(!this.treeHeight) {this.treeHeight = node; this.forceUpdate()} }}>
-                            {
-                                this.treeHeight ? */}
+
                         {
                             this.state.data ?
                                 <InfiniteTree className='tree' width="100%" height={1000} rowHeight={50} data={this.state.data}>
@@ -116,72 +135,78 @@ class Tree extends Component {
                                         console.log(node.state);
 
                                         return (
-                                            <TreeNode
-                                                selected={node.state.selected}
-                                                depth={node.state.depth}
-                                                onClick={event => {
-                                                    tree.selectNode(node);
+                                            <>
+                                                {
+                                                    ((Math.floor(new Date(node.parsedCertificate.validTo).getTime() / 1000) > Math.floor((new Date()).getTime() / 1000)) 
+                                                    && (Math.floor(new Date(node.parsedCertificate.validFrom).getTime() / 1000) < Math.floor((new Date()).getTime() / 1000)))
+                                                    // && (node.revoked == null) 
+                                                    ?
+                                                        < TreeNode
+                                                            selected={node.state.selected}
+                                                            depth={node.state.depth}
+                                                            onClick={event => {
+                                                                tree.selectNode(node);
 
-                                                }}
+                                                            }}
 
-                                            >
-                                                <div className={node.state.selected ? "certificate-selected" : ""}>
-                                                    <Toggler
-                                                        state={toggleState}
-                                                        onClick={() => {
-                                                            if (toggleState === "closed") {
-                                                                tree.openNode(node);
-                                                            } else if (toggleState === "opened") {
-                                                                tree.closeNode(node);
-                                                            }
-                                                        }}
-                                                    />
-
-
-                                                    <span className="certificate-name">
-                                                        <Isvg src={certificateIcon} />   {node.parsedCertificate.subject.commonName}
-                                                        {
-                                                            node.revoked != null ?
-                                                                <span className="revoked">(nije validan)</span>
-                                                                : null
-                                                        }
-                                                    </span>
+                                                        >
+                                                            <div className={node.state.selected ? "certificate-selected" : ""}>
+                                                                <Toggler
+                                                                    state={toggleState}
+                                                                    onClick={() => {
+                                                                        if (toggleState === "closed") {
+                                                                            tree.openNode(node);
+                                                                        } else if (toggleState === "opened") {
+                                                                            tree.closeNode(node);
+                                                                        }
+                                                                    }}
+                                                                />
 
 
-
-                                                    {
-                                                        node.state.selected ?
-                                                            <span className="buttons">
-                                                                <Link to={`/certificate/${node.id}`}><button className="button-action preview">Pogledaj</button></Link>
-                                                                {
-                                                                    node.revoked == null ?
-                                                                        <button onClick={() => this.revoke(node.id)} className="button-action space download">Povuci</button>
-                                                                        :
-                                                                        <button onClick={() => this.restore(node.id)} className="button-action space download">Vrati</button>
-                                                                }
-                                                                { node.parsedCertificate.extensions && node.parsedCertificate.extensions['2.5.29.19'] && node.parsedCertificate.extensions['2.5.29.19'].value && node.parsedCertificate.extensions['2.5.29.19'].value.isCA ?
-                                                                <Link to={`/addCertificate/${node.id}`}><button className="button-action space create-new">Kreiraj</button></Link>
-                                                                    :
-                                                                    null
-                                                                }
+                                                                <span className="certificate-name">
+                                                                    <Isvg src={certificateIcon} />   {node.parsedCertificate.subject.commonName}
+                                                                    {
+                                                                        node.revoked != null ?
+                                                                            <span className="revoked">(nije validan)</span>
+                                                                            : null
+                                                                    }
                                                                 </span>
-                                                            : null
-                                                    }
 
-                                                </div>
 
-                                            </TreeNode>
+
+                                                                {
+                                                                    node.state.selected ?
+                                                                        <span className="buttons">
+                                                                            <Link to={`/certificate/${node.id}`}><button className="button-action preview">Preview</button></Link>
+                                                                            {
+                                                                                node.revoked == null ?
+                                                                                    <button onClick={() => this.revoke(node.id)} className="button-action space download">Revoke</button>
+                                                                                    :
+                                                                                    <button onClick={() => this.restore(node.id)} className="button-action space download">Restore</button>
+                                                                            }
+                                                                            {node.parsedCertificate.extensions && node.parsedCertificate.extensions['2.5.29.19'] && node.parsedCertificate.extensions['2.5.29.19'].value && node.parsedCertificate.extensions['2.5.29.19'].value.isCA ?
+                                                                                <Link to={`/addCertificate/${node.id}`}><button className="button-action space create-new">Create new</button></Link>
+                                                                                :
+                                                                                null
+                                                                            }
+                                                                        </span>
+                                                                        : null
+                                                                }
+
+                                                            </div>
+
+                                                        </TreeNode>
+                                                        : tree.removeNode(node)
+                                                }
+                                            </>
                                         );
                                     }}
                                 </InfiniteTree>
                                 : null
                         }
-                        {/* : null
-                            } */}
-                        {/* </div> */}
+
                     </Col>
                 </Row>
-                {/* </Container> */}
             </div >
         );
     }
