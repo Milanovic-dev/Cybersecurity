@@ -1,8 +1,9 @@
 import CertificateStore from '../admin/certificateStore';
 import CertificateService from '../admin/certificateService';
-const {generateCertificate} = require('../certificateBuilder/builder');
-let fs = require('fs');
 
+let fs = require('fs');
+const {generateCertificate} = require('../certificateBuilder/builder');
+const isAdminAuthenticated = require('../admin/auth');
 
 
 module.exports = function(app){
