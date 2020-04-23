@@ -63,7 +63,7 @@ const fetch = async (id) => {
     }
 
     let dbCertificateObject = await db.collection('certificates').findOne({
-        _id: ObjectID(id)
+        _id: ObjectID(id),
     });
 
     if(!dbCertificateObject){

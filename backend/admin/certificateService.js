@@ -3,6 +3,8 @@ import { Db } from 'mongodb';
 const {generateCertificate, parseCertificate} = require('../certificateBuilder/builder');
 import Moment from 'moment';
 
+const fs = require('fs');
+
 const CertificateService = {
     createCertificateAsync: async (certObject, parentId) => {
         certObject.validFrom = Moment.unix(certObject.validFrom).toDate();
@@ -16,16 +18,20 @@ const CertificateService = {
                 return {status: 404 };
             }
             let result = await generateCertificate(certObject, parentObject.certificate, parentObject.privateKey); //[certificate, privateKey]
-            let storeResult = await CertificateStore.storeAsync(result, parentId);
-            return {status: storeResult.status, response: { "insertedID": storeResult.insertedId }};
+            console.log(result);
+            fs.writeFileSync('certificates/test.p12', result);
+            //let storeResult = await CertificateStore.storeAsync(result, parentId);
+            //return {status: storeResult.status, response: { "insertedID": storeResult.insertedId }};
+            return {status : 200}
         }
         else
         {
             let result = await generateCertificate(certObject); //[certificate, privateKey]
-
-            let storeResult = await CertificateStore.storeAsync(result);
-            
-            return {status: storeResult.status, response: { "insertedID": storeResult.insertedId }};
+            console.log(result);
+            //let storeResult = await CertificateStore.storeAsync(result);
+            fs.writeFileSync('certificates/test.p12', result);
+            //return {status: storeResult.status, response: { "insertedID": storeResult.insertedId }};
+            return {status : 200}
         }
     },
     fetchCertificateAsync: async (id) => {
