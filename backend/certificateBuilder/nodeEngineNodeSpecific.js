@@ -1,6 +1,9 @@
 const WebCrypto = require('node-webcrypto-ossl');
 const crypto = require("crypto");
-const webcrypto = new WebCrypto.Crypto();
+//const webcrypto = new WebCrypto.Crypto();
+//const { Crypto } = require("@peculiar/webcrypto");
+//const webcrypto = new Crypto();
+
 //**************************************************************************************
 function getRandomValues(length)
 {

@@ -1,9 +1,11 @@
 const WebCrypto = require('node-webcrypto-ossl');
-import { bufferToHexCodes, stringToArrayBuffer } from "pvutils";
+import { bufferToHexCodes } from "pvutils";
+//import nodeEngine from './nodeEngine';
+import NodeEngine from './nodeEngine';
 
-const asn1js = require("asn1js");
-const {issuerTypesMap, hashAlg,signAlg,issuerTypesRevMap,extendedKeyUsageMap,extendedKeyUsageRevMap,algomap} = require("./constants");
-const {pemStringToArrayBuffer,formatPEM,importPrivateKey, buf2ab} = require("./parse");
+import * as asn1js from "asn1js";
+const { issuerTypesMap, hashAlg, signAlg, issuerTypesRevMap, extendedKeyUsageMap, extendedKeyUsageRevMap, algomap } = require("./constants");
+const { pemStringToArrayBuffer, formatPEM, importPrivateKey, buf2ab } = require("./parse");
 
 const { Certificate,
     AttributeTypeAndValue,
@@ -39,31 +41,81 @@ const { Certificate,
 var webcrypto = new WebCrypto.Crypto();
 
 
-/*
 
-
-setEngine('nodeEngine', nodeSpecificCrypto, new CryptoEngine({
-    crypto: nodeSpecificCrypto,
-    subtle: webcrypto.subtle,
-    name: 'nodeEngine'
-}));
-*/
-
-//import nodeEngine from './nodeEngine';
+const nodeEngine = require('./node-engine');
 const nodeSpecificCrypto = require('./nodeEngineNodeSpecific');
-    webcrypto.subtle.getRandomValues = require('./nodeEngine').getRandomValues;
-	webcrypto.subtle.getAlgorithmByOID = require('./nodeEngine').getAlgorithmByOID;
-	webcrypto.subtle.getOIDByAlgorithm = require('./nodeEngine').getOIDByAlgorithm;
-	webcrypto.subtle.getAlgorithmParameters = require('./nodeEngine').getAlgorithmParameters;
-	webcrypto.subtle.encryptEncryptedContentInfo = require('./nodeEngine').encryptEncryptedContentInfo;
-	webcrypto.subtle.decryptEncryptedContentInfo = require('./nodeEngine').decryptEncryptedContentInfo;
-	webcrypto.subtle.stampDataWithPassword = require('./nodeEngine').stampDataWithPassword;
-	webcrypto.subtle.verifyDataStampedWithPassword = require('./nodeEngine').verifyDataStampedWithPassword;
-setEngine('nodeEngine', nodeSpecificCrypto, new CryptoEngine({
-    crypto: require('./nodeEngine'),
-    subtle: webcrypto.subtle,
+
+let engine = new CryptoEngine({
+    crypto: nodeSpecificCrypto,
+    subtle: nodeEngine.subtle,
     name: 'nodeEngine'
-}));
+});
+
+
+engine.getRandomValues = nodeEngine.getRandomValues;
+engine.getAlgorithmByOID = nodeEngine.getAlgorithmByOID;
+engine.getOIDByAlgorithm = nodeEngine.getOIDByAlgorithm;
+engine.getAlgorithmParameters = nodeEngine.getAlgorithmParameters;
+engine.encryptEncryptedContentInfo = nodeEngine.encryptEncryptedContentInfo;
+engine.decryptEncryptedContentInfo = nodeEngine.decryptEncryptedContentInfo;
+engine.stampDataWithPassword = nodeEngine.stampDataWithPassword;
+engine.verifyDataStampedWithPassword = nodeEngine.verifyDataStampedWithPassword;
+
+
+
+var functionLogger = {};
+
+functionLogger.log = true;//Set this to false to disable logging 
+
+/**
+ * Gets a function that when called will log information about itself if logging is turned on.
+ *
+ * @param func The function to add logging to.
+ * @param name The name of the function.
+ *
+ * @return A function that will perform logging and then call the function. 
+ */
+functionLogger.getLoggableFunction = function(func, name) {
+    return function() {
+        if (functionLogger.log) {
+            var logText = name + '(';
+
+            for (var i = 0; i < arguments.length; i++) {
+                if (i > 0) {
+                    logText += ', ';
+                }
+                logText += arguments[i];
+            }
+            logText += ');';
+
+            console.log(logText);
+        }
+
+        return func.apply(this, arguments);
+    }
+};
+
+/**
+ * After this is called, all direct children of the provided namespace object that are 
+ * functions will log their name as well as the values of the parameters passed in.
+ *
+ * @param namespaceObject The object whose child functions you'd like to add logging to.
+ */
+functionLogger.addLoggingToNamespace = function(namespaceObject){
+    for(var name in namespaceObject){
+        var potentialFunction = namespaceObject[name];
+
+        if(Object.prototype.toString.call(potentialFunction) === '[object Function]'){
+            namespaceObject[name] = functionLogger.getLoggableFunction(potentialFunction, name);
+        }
+    }
+};
+
+
+
+
+setEngine('nodeEngine', nodeSpecificCrypto, engine);
+
 
 
 function createCertificateInternal(params, parentCertificate, caPrivateKey) {
@@ -71,7 +123,7 @@ function createCertificateInternal(params, parentCertificate, caPrivateKey) {
     let sequence = Promise.resolve();
 
     const certificate = new Certificate();
-    
+
     let publicKey;
     let privateKey;
 
@@ -133,12 +185,12 @@ function createCertificateInternal(params, parentCertificate, caPrivateKey) {
     certificate.extensions = []; // Extensions are not a part of certificate by default, it's an optional array
 
     //region "BasicConstraints" extension
-    if (!params.basicConstraints){
+    if (!params.basicConstraints) {
         const basicConstr = new BasicConstraints({
             cA: false,
             pathLenConstraint: null
         });
-    
+
         certificate.extensions.push(new Extension({
             extnID: "2.5.29.19",
             critical: true,
@@ -146,13 +198,13 @@ function createCertificateInternal(params, parentCertificate, caPrivateKey) {
             parsedValue: basicConstr // Parsed value for well-known extensions
         }));
         //endregion 
-    
-    }else {
+
+    } else {
         const basicConstr = new BasicConstraints({
             cA: params.basicConstraints.isCA,
             pathLenConstraint: params.basicConstraints.pathLengthConstraint
         });
-    
+
         certificate.extensions.push(new Extension({
             extnID: "2.5.29.19",
             critical: true,
@@ -229,7 +281,9 @@ function createCertificateInternal(params, parentCertificate, caPrivateKey) {
     //region Create a new key pair 
     sequence = sequence.then(() => {
         //region Get default algorithm parameters for key generation
+        console.log('aaaa');
         const algorithm = getAlgorithmParameters(signAlg, "generatekey");
+        console.log(algorithm);
         //console.log(algorithm);
         if ("hash" in algorithm.algorithm)
             algorithm.algorithm.hash.name = hashAlg;
@@ -339,7 +393,7 @@ function createCertificateInternal(params, parentCertificate, caPrivateKey) {
 
 
 
-function generateCertificate(params, parentCertificate, parentPrivateKey) {
+function generateCertificate(params, parentCertificate, parentPrivateKey, keyStorePassword) {
     if (parentCertificate) {
         return importPrivateKey(parentPrivateKey).then((privateKey) => {
             return createCertificateInternal(params, loadCertificate(parentCertificate), privateKey).then((result) => {
@@ -348,13 +402,13 @@ function generateCertificate(params, parentCertificate, parentPrivateKey) {
                 const certificateString = String.fromCharCode.apply(null, new Uint8Array(result.certificateBuffer));
                 const privateKeyString = String.fromCharCode.apply(null, new Uint8Array(result.privateKeyBuffer));
 
-                let result2 =  {
+                let result2 = {
                     certificate: `-----BEGIN CERTIFICATE-----\n${formatPEM(Buffer.from(certificateString, 'ascii').toString('base64'))}\n-----END CERTIFICATE-----\n`,
                     privateKey: `-----BEGIN PRIVATE KEY-----\n${formatPEM(Buffer.from(privateKeyString, 'ascii').toString('base64'))}\n-----END PRIVATE KEY-----\n`
                 };
 
-                return openSSLLike(result2.certificate, result2.privateKey, 'test',  "PBKDF2");              
-
+                return openSSLLike(result2.certificate, result2.privateKey, keyStorePassword, "AES-256-CBC", "SHA-1");
+    
             }, error => {
                 if (error instanceof Object)
                     console.log(error.message);
@@ -370,12 +424,12 @@ function generateCertificate(params, parentCertificate, parentPrivateKey) {
             const certificateString = String.fromCharCode.apply(null, new Uint8Array(result.certificateBuffer));
             const privateKeyString = String.fromCharCode.apply(null, new Uint8Array(result.privateKeyBuffer));
 
-            let result2 =  {
+            let result2 = {
                 certificate: `-----BEGIN CERTIFICATE-----\n${formatPEM(Buffer.from(certificateString, 'ascii').toString('base64'))}\n-----END CERTIFICATE-----\n`,
                 privateKey: `-----BEGIN PRIVATE KEY-----\n${formatPEM(Buffer.from(privateKeyString, 'ascii').toString('base64'))}\n-----END PRIVATE KEY-----\n`
             };
 
-            return openSSLLike(result2.certificate, result2.privateKey, 'test',  "PBKDF2");    
+            return openSSLLike(result2.certificate, result2.privateKey, keyStorePassword, "AES-256-CBC", "SHA-1");
 
         }, error => {
             if (error instanceof Object)
@@ -386,6 +440,183 @@ function generateCertificate(params, parentCertificate, parentPrivateKey) {
 
 
     }
+}
+function openSSLLike(certificate, privateKey, password, inputAlgorithm, inputHashAlgorithm = "SHA-256") {
+    //region Initial variables
+
+    const certSimpl = loadCertificate(certificate);
+
+    let asn1 = asn1js.fromBER(buf2ab(Buffer.from(privateKey.replace('-----BEGIN PRIVATE KEY-----', '').replace('-----BEGIN PRIVATE KEY-----', '').replace(/\r/g, '').replace(/\n/g, ''), 'base64')));
+    const pkcs8Simpl = new PrivateKeyInfo({ schema: asn1.result });
+    //console.log(pkcs8Simpl);
+    //region Initial variables
+    //region Initial variables
+    let sequence = Promise.resolve();
+
+    const keyLocalIDBuffer = new ArrayBuffer(4);
+    const keyLocalIDView = new Uint8Array(keyLocalIDBuffer);
+
+    getRandomValues(keyLocalIDView);
+
+    const certLocalIDBuffer = new ArrayBuffer(4);
+    const certLocalIDView = new Uint8Array(certLocalIDBuffer);
+
+    getRandomValues(certLocalIDView);
+
+    //region "KeyUsage" attribute
+    const bitArray = new ArrayBuffer(1);
+    const bitView = new Uint8Array(bitArray);
+
+    bitView[0] |= 0x80;
+
+    const keyUsage = new asn1js.BitString({
+        valueHex: bitArray,
+        unusedBits: 7
+    });
+    //endregion
+
+    const passwordConverted = stringToArrayBuffer(password);
+    //endregion
+
+    const contentEncryptionAlgorithm = (getAlgorithmParameters(inputAlgorithm, "encrypt")).algorithm;
+    if (("name" in contentEncryptionAlgorithm) === false)
+        return Promise.reject(`No support for selected algorithm: ${inputAlgorithm}`);
+
+    const makeInternalValuesParameters = {
+        password: passwordConverted,
+        contentEncryptionAlgorithm,
+        hmacHashAlgorithm: inputHashAlgorithm,
+        iterationCount: 2048
+    };
+
+
+    //region Add "keyUsage" attribute
+    pkcs8Simpl.attributes = [
+        new Attribute({
+            type: "2.5.29.15",
+            values: [
+                keyUsage
+            ]
+        })
+    ];
+    //endregion
+    //endregion
+
+    //region Put initial values for PKCS#12 structures
+    const pkcs12 = new PFX({
+        parsedValue: {
+            integrityMode: 0, // Password-Based Integrity Mode
+            authenticatedSafe: new AuthenticatedSafe({
+                parsedValue: {
+                    safeContents: [
+                        {
+                            privacyMode: 0, // "No-privacy" Protection Mode
+                            value: new SafeContents({
+                                safeBags: [
+                                    new SafeBag({
+                                        bagId: "1.2.840.113549.1.12.10.1.2",
+                                        bagValue: new PKCS8ShroudedKeyBag({
+                                            parsedValue: pkcs8Simpl
+                                        }),
+                                        bagAttributes: [
+                                            new Attribute({
+                                                type: "1.2.840.113549.1.9.20", // friendlyName
+                                                values: [
+                                                    new asn1js.BmpString({ value: "PKCS8ShroudedKeyBag from PKIjs" })
+                                                ]
+                                            }),
+                                            new Attribute({
+                                                type: "1.2.840.113549.1.9.21", // localKeyID
+                                                values: [
+                                                    new asn1js.OctetString({ valueHex: keyLocalIDBuffer })
+                                                ]
+                                            }),
+                                            new Attribute({
+                                                type: "1.3.6.1.4.1.311.17.1", // pkcs12KeyProviderNameAttr
+                                                values: [
+                                                    new asn1js.BmpString({ value: "http://www.pkijs.org" })
+                                                ]
+                                            })
+                                        ]
+                                    })
+                                ]
+                            })
+                        },
+                        {
+                            privacyMode: 1, // Password-Based Privacy Protection Mode
+                            value: new SafeContents({
+                                safeBags: [
+                                    new SafeBag({
+                                        bagId: "1.2.840.113549.1.12.10.1.3",
+                                        bagValue: new CertBag({
+                                            parsedValue: certSimpl
+                                        }),
+                                        bagAttributes: [
+                                            new Attribute({
+                                                type: "1.2.840.113549.1.9.20", // friendlyName
+                                                values: [
+                                                    new asn1js.BmpString({ value: "CertBag from PKIjs" })
+                                                ]
+                                            }),
+                                            new Attribute({
+                                                type: "1.2.840.113549.1.9.21", // localKeyID
+                                                values: [
+                                                    new asn1js.OctetString({ valueHex: certLocalIDBuffer })
+                                                ]
+                                            }),
+                                            new Attribute({
+                                                type: "1.3.6.1.4.1.311.17.1", // pkcs12KeyProviderNameAttr
+                                                values: [
+                                                    new asn1js.BmpString({ value: "http://www.pkijs.org" })
+                                                ]
+                                            })
+                                        ]
+                                    })
+                                ]
+                            })
+                        }
+                    ]
+                }
+            })
+        }
+    });
+    //endregion
+
+    //region Encode internal values for "PKCS8ShroudedKeyBag"
+    sequence = sequence.then(
+        () => pkcs12.parsedValue.authenticatedSafe.parsedValue.safeContents[0].value.safeBags[0].bagValue.makeInternalValues(makeInternalValuesParameters)
+    );
+    //endregion
+
+    //region Encode internal values for all "SafeContents" firts (create all "Privacy Protection" envelopes)
+    sequence = sequence.then(
+        () => pkcs12.parsedValue.authenticatedSafe.makeInternalValues({
+            safeContents: [
+                {
+                    // Empty parameters for first SafeContent since "No Privacy" protection mode there
+                },
+                makeInternalValuesParameters
+            ]
+        })
+    );
+    //endregion
+
+    //region Encode internal values for "Integrity Protection" envelope
+    sequence = sequence.then(
+        () => pkcs12.makeInternalValues({
+            password: passwordConverted,
+            iterations: 100000,
+            pbkdf2HashAlgorithm: "SHA-256", // OpenSSL can not handle usage of PBKDF2, only PBKDF1
+            hmacHashAlgorithm: "SHA-256"
+        })
+    );
+    //endregion
+
+    //region Save encoded data
+    sequence = sequence.then(() => pkcs12.toSchema().toBER(false));
+    //endregion
+
+    return sequence;
 }
 
 
@@ -687,307 +918,75 @@ function parseOCSPRequest(ocspReqBuffer) {
     return res;
 }
 
-function openSSLLike(certificate, privateKey, password, inputAlgorithm, inputHashAlgorithm = "SHA-256")
-{
-	//region Initial variables
+
+function stringToArrayBuffer(str) {
+    var stringLength = str.length;
+
+    var resultBuffer = new ArrayBuffer(stringLength);
+    var resultView = new Uint8Array(resultBuffer);
+
+    // noinspection NonBlockStatementBodyJS
+    for (var i = 0; i < stringLength; i++) {
+        resultView[i] = str.charCodeAt(i);
+    } return resultBuffer;
+}
+
+
+function parsePKCS12(buffer, password) {
+    //region Initial variables
     let sequence = Promise.resolve();
 
-    const certSimpl = loadCertificate(certificate);
-    
-	let asn1 = asn1js.fromBER(buf2ab(Buffer.from(privateKey.replace('-----BEGIN PRIVATE KEY-----', '').replace('-----BEGIN PRIVATE KEY-----', '').replace(/\r/g, '').replace(/\n/g, ''), 'base64')));
-	const pkcs8Simpl = new PrivateKeyInfo({ schema: asn1.result });
-	
-	const keyLocalIDBuffer = new ArrayBuffer(4);
-	let keyLocalIDView = new Uint8Array(keyLocalIDBuffer);
-	
-	getRandomValues(keyLocalIDView);
-	
-	const certLocalIDBuffer = new ArrayBuffer(4);
-	let certLocalIDView = new Uint8Array(certLocalIDBuffer);
-	
-	getRandomValues(certLocalIDView);
-	
-	//region "KeyUsage" attribute
-	const bitArray = new ArrayBuffer(1);
-	const bitView = new Uint8Array(bitArray);
-	
-	bitView[0] |= 0x80;
-	
-	const keyUsage = new asn1js.BitString({
-		valueHex: bitArray,
-		unusedBits: 7
-	});
-	//endregion
-	
-	const passwordConverted = stringToArrayBuffer(password);
-    const contentEncryptionAlgorithm = (getAlgorithmParameters(inputAlgorithm, "encrypt")).algorithm;
-	if(("name" in contentEncryptionAlgorithm) === false)
-		return Promise.reject(`No support for selected algorithm: ${inputAlgorithm}`);
-	
-	const makeInternalValuesParameters = {
-		password: passwordConverted,
-		contentEncryptionAlgorithm,
-		hmacHashAlgorithm: inputHashAlgorithm,
-		iterationCount: 2048
-	};
-	//endregion
-	
-	//region Add "keyUsage" attribute
-	pkcs8Simpl.attributes = [
-		new Attribute({
-			type: "2.5.29.15",
-			values: [
-				keyUsage
-			]
-		})
-	];
-	//endregion
-	
-	//region Put initial values for PKCS#12 structures
-	const pkcs12 = new PFX({
-		parsedValue: {
-			integrityMode: 0, // Password-Based Integrity Mode
-			authenticatedSafe: new AuthenticatedSafe({
-				parsedValue: {
-					safeContents: [
-						{
-							privacyMode: 1, // Password-Based Privacy Protection Mode
-							value: new SafeContents({
-								safeBags: [
-									new SafeBag({
-										bagId: "1.2.840.113549.1.12.10.1.3",
-										bagValue: new CertBag({
-											parsedValue: certSimpl
-										}),
-										bagAttributes: [
-											new Attribute({
-												type: "1.2.840.113549.1.9.20", // friendlyName
-												values: [
-													new asn1js.BmpString({ value: "CertBag from PKIjs" })
-												]
-											}),
-											new Attribute({
-												type: "1.2.840.113549.1.9.21", // localKeyID
-												values: [
-													new asn1js.OctetString({ valueHex: certLocalIDBuffer })
-												]
-											}),
-											new Attribute({
-												type: "1.3.6.1.4.1.311.17.1", // pkcs12KeyProviderNameAttr
-												values: [
-													new asn1js.BmpString({ value: "http://www.pkijs.org" })
-												]
-											})
-										]
-									})
-								]
-							})
-						},
-						{
-							privacyMode: 0, // "No-privacy" Protection Mode
-							value: new SafeContents({
-								safeBags: [
-									new SafeBag({
-										bagId: "1.2.840.113549.1.12.10.1.2",
-										bagValue: new PKCS8ShroudedKeyBag({
-											parsedValue: pkcs8Simpl
-										}),
-										bagAttributes: [
-											new Attribute({
-												type: "1.2.840.113549.1.9.20", // friendlyName
-												values: [
-													new asn1js.BmpString({ value: "PKCS8ShroudedKeyBag from PKIjs" })
-												]
-											}),
-											new Attribute({
-												type: "1.2.840.113549.1.9.21", // localKeyID
-												values: [
-													new asn1js.OctetString({ valueHex: keyLocalIDBuffer })
-												]
-											}),
-											new Attribute({
-												type: "1.3.6.1.4.1.311.17.1", // pkcs12KeyProviderNameAttr
-												values: [
-													new asn1js.BmpString({ value: "http://www.pkijs.org" })
-												]
-											})
-										]
-									})
-								]
-							})
-						}
-					]
-				}
-			})
-		}
-	});
-	//endregion
-	
-	//region Encode internal values for "PKCS8ShroudedKeyBag"
-	sequence = sequence.then(
-		() => pkcs12.parsedValue.authenticatedSafe.parsedValue.safeContents[1].value.safeBags[0].bagValue.makeInternalValues(makeInternalValuesParameters)
-	);
-	//endregion
-	
-	//region Encode internal values for all "SafeContents" firts (create all "Privacy Protection" envelopes)
-	sequence = sequence.then(
-		() => pkcs12.parsedValue.authenticatedSafe.makeInternalValues({
-			safeContents: [
-				makeInternalValuesParameters,
-				{
-					// Empty parameters for first SafeContent since "No Privacy" protection mode there
-				},
-			]
-		})
-	);
-	//endregion
-	
-	//region Encode internal values for "Integrity Protection" envelope
-	sequence = sequence.then(
-		() => pkcs12.makeInternalValues({
-			password: passwordConverted,
-			iterations: 2048,
-			pbkdf2HashAlgorithm: inputHashAlgorithm, // OpenSSL can not handle usage of PBKDF2, only PBKDF1
-			hmacHashAlgorithm: inputHashAlgorithm
-		})
-	);
-	//endregion
-	
-	//region Save encoded data
-	sequence = sequence.then(() => pkcs12.toSchema().toBER(false));
-	//endregion
-	
-	return sequence;
-}
+    const passwordConverted = stringToArrayBuffer(password);
+    console.log(passwordConverted);
+    //endregion
 
+    //region Parse internal PKCS#12 values
+    const asn1 = asn1js.fromBER(buffer);
+    let pkcs12 = new PFX({ schema: asn1.result });
+    console.log( (pkcs12.authSafe.content instanceof asn1js.OctetString) === false );
+    //region Parse "AuthenticatedSafe" value of PKCS#12 data
+    sequence = sequence.then(() => pkcs12.parseInternalValues({
+        password: passwordConverted,
+        checkIntegrity: true
+    }));
+    //endregion
 
+    //region Parse "SafeContents" values
+    sequence = sequence.then(() => pkcs12.parsedValue.authenticatedSafe.parseInternalValues({
+        safeContents: [{
+            // Empty parameters since for first "SafeContent" OpenSSL uses "no privacy" protection mode
+        }, {
+            password: passwordConverted
+        }]
+    }));
+    //endregion
 
-function passwordBasedIntegrity(certificate, privateKey, password)
-{
-	return Promise.resolve().then(() => passwordBasedIntegrityInternal(certificate, privateKey, password));
-}
+    //region Parse "PKCS8ShroudedKeyBag" value
+    sequence = sequence.then(() => pkcs12.parsedValue.authenticatedSafe.parsedValue.safeContents[0].value.safeBags[0].bagValue.parseInternalValues({
+        password: passwordConverted
+    }));
+    //endregion
 
+    //region Store parsed value to Web page
+    sequence = sequence.then(() => {
+        var certificateBuffer = pkcs12.parsedValue.authenticatedSafe.parsedValue.safeContents[1].value.safeBags[0].bagValue.parsedValue.toSchema().toBER(false);
+        //endregion Store PKCS#8 (private key) value
+        var pkcs8Buffer = pkcs12.parsedValue.authenticatedSafe.parsedValue.safeContents[0].value.safeBags[0].bagValue.parsedValue.toSchema().toBER(false);
 
-function passwordBasedIntegrityInternal(certificate, privateKey, password, hash = "SHA-256")
-{
-	//region Initial variables
-	let sequence = Promise.resolve();
-	//endregion
-	
-	const certSimpl = loadCertificate(certificate);
-    
-	let asn1 = asn1js.fromBER(buf2ab(Buffer.from(privateKey.replace('-----BEGIN PRIVATE KEY-----', '').replace('-----BEGIN PRIVATE KEY-----', '').replace(/\r/g, '').replace(/\n/g, ''), 'base64')));
-	const pkcs8Simpl = new PrivateKeyInfo({ schema: asn1.result });
-	//endregion
-	
-	//region Put initial values for PKCS#12 structures
-	const pkcs12 = new PFX({
-		parsedValue: {
-			integrityMode: 0, // Password-Based Integrity Mode
-			authenticatedSafe: new AuthenticatedSafe({
-				parsedValue: {
-					safeContents: [
-						{
-							privacyMode: 1, // Password-Based Privacy Protection Mode
-							value: new SafeContents({
-								safeBags: [
-									new SafeBag({
-										bagId: "1.2.840.113549.1.12.10.1.3",
-										bagValue: new CertBag({
-											parsedValue: certSimpl
-										}),
-										bagAttributes: [
-											new Attribute({
-												type: "1.2.840.113549.1.9.20", // friendlyName
-												values: [
-													new asn1js.BmpString({ value: "CertBag from PKIjs" })
-												]
-											}),
-											new Attribute({
-												type: "1.2.840.113549.1.9.21", // localKeyID
-												values: [
-													new asn1js.OctetString({ valueHex: certLocalIDBuffer })
-												]
-											}),
-											new Attribute({
-												type: "1.3.6.1.4.1.311.17.1", // pkcs12KeyProviderNameAttr
-												values: [
-													new asn1js.BmpString({ value: "http://www.pkijs.org" })
-												]
-											})
-										]
-									})
-								]
-							})
-						},
-						{
-							privacyMode: 0, // "No-privacy" Protection Mode
-							value: new SafeContents({
-								safeBags: [
-									new SafeBag({
-										bagId: "1.2.840.113549.1.12.10.1.2",
-										bagValue: new PKCS8ShroudedKeyBag({
-											parsedValue: pkcs8Simpl
-										}),
-										bagAttributes: [
-											new Attribute({
-												type: "1.2.840.113549.1.9.20", // friendlyName
-												values: [
-													new asn1js.BmpString({ value: "PKCS8ShroudedKeyBag from PKIjs" })
-												]
-											}),
-											new Attribute({
-												type: "1.2.840.113549.1.9.21", // localKeyID
-												values: [
-													new asn1js.OctetString({ valueHex: keyLocalIDBuffer })
-												]
-											}),
-											new Attribute({
-												type: "1.3.6.1.4.1.311.17.1", // pkcs12KeyProviderNameAttr
-												values: [
-													new asn1js.BmpString({ value: "http://www.pkijs.org" })
-												]
-											})
-										]
-									})
-								]
-							})
-						}
-					]
-				}
-			})
-		}
-	});
-	//endregion
-	
-	//region Encode internal values for all "SafeContents" firts (create all "Privacy Protection" envelopes)
-	sequence = sequence.then(
-		() => pkcs12.parsedValue.authenticatedSafe.makeInternalValues({
-			safeContents: [
-				{
-					// Empty parameters since we have "No Privacy" protection level for SafeContents
-				}
-			]
-		})
-	);
-	//endregion
-	
-	//region Encode internal values for "Integrity Protection" envelope
-	sequence = sequence.then(
-		() => pkcs12.makeInternalValues({
-			password: stringToArrayBuffer(password),
-			iterations: 100000,
-			pbkdf2HashAlgorithm: hash, // Least two parameters are equal because at the moment it is not clear how to use PBMAC1 schema with PKCS#12 integrity protection
-			hmacHashAlgorithm: hash
-		})
-	);
-	//endregion
-	
-	//region Encode output buffer
-	sequence = sequence.then(() => pkcs12.toSchema().toBER(false));
-	//endregion
-	
-	return sequence;
+        const certificateString = String.fromCharCode.apply(null, new Uint8Array(certificateBuffer));
+        const privateKeyString = String.fromCharCode.apply(null, new Uint8Array(pkcs8Buffer));
+
+        return {
+            certificate: `-----BEGIN CERTIFICATE-----\n${formatPEM(Buffer.from(certificateString, 'ascii').toString('base64'))}\n-----END CERTIFICATE-----\n`,
+            privateKey: `-----BEGIN PRIVATE KEY-----\n${formatPEM(Buffer.from(privateKeyString, 'ascii').toString('base64'))}\n-----END PRIVATE KEY-----\n`
+
+        }
+
+    });
+    //endregion
+
+    return sequence;
+
 }
 
 
@@ -998,6 +997,8 @@ module.exports = {
     parseCertificate: parseCertificate,
     loadCertificate: loadCertificate,
     generateOCSPResponse: generateOCSPResponse,
-    parseOCSPRequest: parseOCSPRequest
+    parseOCSPRequest: parseOCSPRequest,
+    parsePKCS12: parsePKCS12
 }
+
 

@@ -12,6 +12,7 @@
   "dependencies": {
     "@peculiar/webcrypto": "^1.0.29",
     "array-unique": "^0.3.2",
+    "asn1js": "latest",
     "bcrypt": "^3.0.6",
     "body-parser": "^1.19.0",
     "chai-like": "^1.1.1",
@@ -21,9 +22,9 @@
     "jsonwebtoken": "^8.5.1",
     "moment": "^2.24.0",
     "mongodb": "^3.3.4",
-    "node-webcrypto-ossl": "^2.0.1",
+    "node-webcrypto-ossl": "latest",
     "nodemailer": "^6.3.1",
-    "pkijs": "^2.1.87",
+    "pkijs": "latest",
     "pvutils": "^1.0.17",
     "selenium-webdriver": "^4.0.0-alpha.5",
     "uuid": "^3.4.0"

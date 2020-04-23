@@ -12,20 +12,44 @@ const { CryptoEngine,
     PBES2Params,
 } = require("pkijs");
 
-//**************************************************************************************
+export default class NodeEngine extends CryptoEngine
+{
+	//**********************************************************************************
+	constructor(parameters)
+	{
+		super(parameters);
+		
+		//region Internal properties of the object
+		/**
+		 * @type {Object}
+		 * @description Usually here we are expecting "window.crypto" or an equivalent from custom "crypto engine"
+		 */
+		this.crypto = nodeSpecificCrypto;
+		/**
+		 * @type {Object}
+		 * @description Usually here we are expecting "window.crypto.subtle" or an equivalent from custom "crypto engine"
+		 */
+		this.subtle = this;
+		/**
+		 * @type {string}
+		 * @description Name of the "crypto engine"
+		 */
+		this.name = "nodeCryptoEngine";
+		//endregion
+	}
 	//**********************************************************************************
 	/**
 	 * Initialize input Uint8Array by random values (with help from current "crypto engine")
 	 * @param {!Uint8Array} view
 	 * @returns {*}
 	 */
-	function getRandomValues(view)
+	getRandomValues(view)
 	{
 		view.set(nodeSpecificCrypto.getRandomValues(view.length));
 		return view;
 	}
 	//**********************************************************************************
-	function getAlgorithmByOID(oid)
+	getAlgorithmByOID(oid)
 	{
 		switch(oid)
 		{
@@ -108,7 +132,7 @@ const { CryptoEngine,
 		return {};
 	}
 	//**********************************************************************************
-	function getOIDByAlgorithm(algorithm)
+	getOIDByAlgorithm(algorithm)
 	{
 		let result = "";
 		
@@ -168,14 +192,13 @@ const { CryptoEngine,
 		return result;
 	}
 	//**********************************************************************************
-	function getAlgorithmParameters(algorithmName, operation)
+	getAlgorithmParameters(algorithmName, operation)
 	{
 		let result = {
 			algorithm: {},
 			usages: []
 		};
-		console.log(algorithmName);
-		console.log(operation);
+		
 		switch(algorithmName.toUpperCase())
 		{
 			case "RC2-40-CBC":
@@ -197,7 +220,7 @@ const { CryptoEngine,
 						result = {
 							algorithm: {
 								name: "RC2-40-CBC",
-								iv: getRandomValues(new Uint8Array(8)), // For "decrypt" the value should be replaced with value got on "encrypt" step
+								iv: this.getRandomValues(new Uint8Array(8)), // For "decrypt" the value should be replaced with value got on "encrypt" step
 								length: 5
 							},
 							usages: ["encrypt", "decrypt", "wrapKey", "unwrapKey"]
@@ -231,7 +254,7 @@ const { CryptoEngine,
 						result = {
 							algorithm: {
 								name: "DES-EDE3-CBC",
-								iv: getRandomValues(new Uint8Array(8)), // For "decrypt" the value should be replaced with value got on "encrypt" step
+								iv: this.getRandomValues(new Uint8Array(8)), // For "decrypt" the value should be replaced with value got on "encrypt" step
 								length: 24
 							},
 							usages: ["encrypt", "decrypt", "wrapKey", "unwrapKey"]
@@ -265,7 +288,7 @@ const { CryptoEngine,
 						result = {
 							algorithm: {
 								name: "AES-128-CBC",
-								iv: getRandomValues(new Uint8Array(16)), // For "decrypt" the value should be replaced with value got on "encrypt" step
+								iv: this.getRandomValues(new Uint8Array(16)), // For "decrypt" the value should be replaced with value got on "encrypt" step
 								length: 16
 							},
 							usages: ["encrypt", "decrypt", "wrapKey", "unwrapKey"]
@@ -300,7 +323,7 @@ const { CryptoEngine,
 						result = {
 							algorithm: {
 								name: "AES-192-CBC",
-								iv: getRandomValues(new Uint8Array(16)), // For "decrypt" the value should be replaced with value got on "encrypt" step
+								iv: this.getRandomValues(new Uint8Array(16)), // For "decrypt" the value should be replaced with value got on "encrypt" step
 								length: 24
 							},
 							usages: ["encrypt", "decrypt", "wrapKey", "unwrapKey"]
@@ -335,7 +358,7 @@ const { CryptoEngine,
 						result = {
 							algorithm: {
 								name: "AES-256-CBC",
-								iv: getRandomValues(new Uint8Array(16)), // For "decrypt" the value should be replaced with value got on "encrypt" step
+								iv: this.getRandomValues(new Uint8Array(16)), // For "decrypt" the value should be replaced with value got on "encrypt" step
 								length: 32
 							},
 							usages: ["encrypt", "decrypt", "wrapKey", "unwrapKey"]
@@ -385,7 +408,7 @@ const { CryptoEngine,
 	 * @param {Object} parameters
 	 * @returns {Promise}
 	 */
-	function encryptEncryptedContentInfo(parameters)
+	encryptEncryptedContentInfo(parameters)
 	{
 		//region Initial variables
 		let sequence = Promise.resolve();
@@ -416,17 +439,17 @@ const { CryptoEngine,
 		if(("pbeSchema" in parameters) === false)
 			parameters.pbeSchema = "PBES2";
 
-		const contentEncryptionOID = getOIDByAlgorithm(parameters.contentEncryptionAlgorithm);
+		const contentEncryptionOID = this.getOIDByAlgorithm(parameters.contentEncryptionAlgorithm);
 		if(contentEncryptionOID === "")
 			return Promise.reject("Wrong \"contentEncryptionAlgorithm\" value");
 		
-		const pbkdf2OID = getOIDByAlgorithm({
+		const pbkdf2OID = this.getOIDByAlgorithm({
 			name: "PBKDF2"
 		});
 		if(pbkdf2OID === "")
 			return Promise.reject("Can not find OID for PBKDF2");
 		
-		const hmacOID = getOIDByAlgorithm({
+		const hmacOID = this.getOIDByAlgorithm({
 			name: "HMAC",
 			hash: {
 				name: parameters.hmacHashAlgorithm
@@ -442,7 +465,7 @@ const { CryptoEngine,
 			//region Initial variables
 			const saltBuffer = new ArrayBuffer(20);
 			const saltView = new Uint8Array(saltBuffer);
-			getRandomValues(saltView);
+			this.getRandomValues(saltView);
 			
 			const ivLength = 8; // (in bytes) For current algorithms (3DES and RC2) IV length has the same value
 			//endregion
@@ -497,11 +520,11 @@ const { CryptoEngine,
 		//region Initial variables
 		const ivBuffer = new ArrayBuffer(parameters.contentEncryptionAlgorithm.iv.length);
 		const ivView = new Uint8Array(ivBuffer);
-		getRandomValues(ivView);
+		this.getRandomValues(ivView);
 		
 		const saltBuffer = new ArrayBuffer(8);
 		const saltView = new Uint8Array(saltBuffer);
-		getRandomValues(saltView);
+		this.getRandomValues(saltView);
 		
 		const pbkdf2Params = new PBKDF2Params({
 			salt: new asn1js.OctetString({ valueHex: saltBuffer }),
@@ -556,7 +579,7 @@ const { CryptoEngine,
 	 * @param parameters
 	 * @return {Promise}
 	 */
-	function decryptEncryptedContentInfo(parameters)
+	decryptEncryptedContentInfo(parameters)
 	{
 		//region Initial variables
 		let pbes1EncryptionAlgorithm = "";
@@ -641,7 +664,7 @@ const { CryptoEngine,
 			return Promise.reject("Incorrectly encoded \"pbkdf2Params\"");
 		}
 		
-		const contentEncryptionAlgorithm = getAlgorithmByOID(pbes2Parameters.encryptionScheme.algorithmId);
+		const contentEncryptionAlgorithm = this.getAlgorithmByOID(pbes2Parameters.encryptionScheme.algorithmId);
 		if(("name" in contentEncryptionAlgorithm) === false)
 			return Promise.reject(`Incorrect OID for \"contentEncryptionAlgorithm\": ${pbes2Parameters.encryptionScheme.algorithmId}`);
 		
@@ -654,7 +677,7 @@ const { CryptoEngine,
 		
 		if("prf" in pbkdf2Params)
 		{
-			const algorithm = getAlgorithmByOID(pbkdf2Params.prf.algorithmId);
+			const algorithm = this.getAlgorithmByOID(pbkdf2Params.prf.algorithmId);
 			if(("name" in algorithm) === false)
 				return Promise.reject("Incorrect OID for HMAC hash algorithm");
 			
@@ -672,7 +695,7 @@ const { CryptoEngine,
 	 * @param {Object} parameters
 	 * @return {Promise.<T>|Promise}
 	 */
-	function stampDataWithPassword(parameters)
+	stampDataWithPassword(parameters)
 	{
 		//region Check for input parameters
 		if((parameters instanceof Object) === false)
@@ -723,7 +746,7 @@ const { CryptoEngine,
 		);
 	}
 	//**********************************************************************************
-	function verifyDataStampedWithPassword(parameters)
+	verifyDataStampedWithPassword(parameters)
 	{
 		//region Check for input parameters
 		if((parameters instanceof Object) === false)
@@ -775,15 +798,5 @@ const { CryptoEngine,
 		);
 	}
 	//**********************************************************************************
-//**************************************************************************************
-
-module.exports = {
-	getRandomValues,
-	getAlgorithmByOID,
-	getOIDByAlgorithm,
-	getAlgorithmParameters,
-	encryptEncryptedContentInfo,
-	decryptEncryptedContentInfo,
-	stampDataWithPassword,
-	verifyDataStampedWithPassword
 }
+//**************************************************************************************
