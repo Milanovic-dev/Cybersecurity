@@ -4,12 +4,6 @@ import Isvg from 'react-inlinesvg';
 import Page from '../../containers/admin/page';
 import CertViewForm from '../../components/forms/certViewForm';
 
-import {
-    Container,
-    Row,
-    Col,
-} from 'reactstrap';
-
 class CertView extends Component {
     constructor(props) {
         super(props)

@@ -13,7 +13,6 @@ class Textarea extends Component {
                 <label>{this.props.label}</label>
                 <textarea className="form-field textarea-mini"
                     onChange={(e) => {
-
                         if (this.props.multilang) {
                             let value = this.props.value;
                             if (!value) {
@@ -27,8 +26,6 @@ class Textarea extends Component {
                             this.props.onChange(e.target.value);
                         }
                         this.forceUpdate();
-
-
                     }}
 
                     disabled={this.props.disabled} value={this.props.multilang ? (this.props.value && this.props.value[this.props.lang]) ? this.props.value[this.props.lang] : '' : this.props.value}

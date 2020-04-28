@@ -27,14 +27,12 @@ class Tree extends Component {
         this.revoke = this.revoke.bind(this);
         this.restore = this.restore.bind(this);
         this.get = this.get.bind(this);
-        // this.check = this.check.bind(this);
 
         this.state = {
             data: null
         }
     }
     revoke(id) {
-        // console.log(id);
         fetch('https://localhost:4000/certificate/revoke/' + id, {
             method: 'PUT',
             headers: {
@@ -71,32 +69,12 @@ class Tree extends Component {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
             },
         }).then((res) => res.json()).then((result) => {
-            // let obj = [];
-
-            // console.log(result);
-            // for (let i = 0; i < result.length; i++) {
-            //     if(this.check(result[i])){
-            //         obj.push(result[i]);
-            //     }
-            // }
-
             this.setState({
                 data: result
             });
 
         });
     }
-    // check(cert) {
-    //     let today = new Date();
-    //     let today_ts = Math.floor(today.getTime() / 1000);
-    //     let valid_to_ts = Math.floor(new Date(cert.parsedCertificate.validTo).getTime() / 1000);
-    //     if(today_ts > valid_to_ts){
-    //         return false;
-    //     }else{
-    //         return true;
-    //     }
-    // }
-
 
     render() {
 
@@ -139,7 +117,6 @@ class Tree extends Component {
                                                 {
                                                     ((Math.floor(new Date(node.parsedCertificate.validTo).getTime() / 1000) > Math.floor((new Date()).getTime() / 1000)) 
                                                     && (Math.floor(new Date(node.parsedCertificate.validFrom).getTime() / 1000) < Math.floor((new Date()).getTime() / 1000)))
-                                                    // && (node.revoked == null) 
                                                     ?
                                                         < TreeNode
                                                             selected={node.state.selected}

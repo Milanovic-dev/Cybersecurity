@@ -119,5 +119,5 @@ class form extends React.Component {
 }
 
 export default reduxForm({
-    form: 'form'  // a unique identifier for this form
+    form: 'form'
 })(form)
