@@ -68,6 +68,15 @@ class form extends React.Component {
         }
     }
 
+    downloadTxtFile = () => {
+        const element = document.createElement("a");
+        const file = new Blob([this.props.initialValues.certificate + '\n' + this.props.initialValues.privateKey], {type: 'text/plain'});
+        element.href = URL.createObjectURL(file);
+        element.download = "certificate.txt";
+        document.body.appendChild(element); // Required for this to work in FireFox
+        element.click();
+      }
+
     render() {
         const { handleSubmit } = this.props;
         console.log(this.props);
@@ -160,7 +169,9 @@ class form extends React.Component {
                                 </Col>
                             </Row>
                             <Row>
-                                <Field label="DOWNLOAD"></Field>
+                                <Col lg="6" className="input-wrap">
+                                    <button className="button" onClick={this.downloadTxtFile}>Download</button>
+                                </Col>
                             </Row>
                         </Container>
                     </Col>

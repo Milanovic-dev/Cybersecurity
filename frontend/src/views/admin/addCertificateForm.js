@@ -10,7 +10,6 @@ import {
 } from 'reactstrap';
 
 
-
 class addCertificateForm extends Component {
     constructor(props) {
         super(props);
@@ -35,10 +34,10 @@ class addCertificateForm extends Component {
         }).then((res) => res.json()).then((result) => {
             console.log(result);
             this.props[0].history.push('/tree');
-        }).catch((err) => {
-            console.log(err);
-        });
+        }).catch((e) => {console.log(e);});
+
     }
+
     componentDidMount() {
         this.get();
 
@@ -104,7 +103,6 @@ class addCertificateForm extends Component {
                         obj.push({ name: "MicrosoftEncryptedFileSystem", text: "Microsoft encrypted filesystem" });
                     }
                 }
-                console.log("rezzzz: ");
                 console.log(obj);
                 this.setState({
                     extensions: obj

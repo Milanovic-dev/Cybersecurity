@@ -271,8 +271,7 @@ class form extends React.Component {
                         </Container>
                     </Col>
                     <Col lg="12">
-                        <button className="button" >Save</button>
-
+                        <button className="button">Save</button>
                     </Col>
                 </Row>
             </form>
