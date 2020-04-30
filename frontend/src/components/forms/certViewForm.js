@@ -148,8 +148,7 @@ class form extends React.Component {
                                         component={renderTextAreaField}
                                         label={"Certificate"}
                                         disabled
-                                    ></Field>
-
+                                    />
                                 </Col>
                                 <Col lg="6" className="input-wrap">
                                     <Field
@@ -157,13 +156,12 @@ class form extends React.Component {
                                         component={renderTextAreaField}
                                         label={"Private Key"}
                                         disabled
-                                    ></Field>
-
+                                    />
                                 </Col>
                             </Row>
-
-
-
+                            <Row>
+                                <Field label="DOWNLOAD"></Field>
+                            </Row>
                         </Container>
                     </Col>
 
@@ -176,5 +174,5 @@ class form extends React.Component {
 }
 
 export default reduxForm({
-    form: 'form'  // a unique identifier for this form
+    form: 'form'
 })(form)

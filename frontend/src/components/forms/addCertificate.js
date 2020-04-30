@@ -242,15 +242,6 @@ class form extends React.Component {
                                         onChange={this.handleChange}
                                         id="extendedKeyUsage"
                                     >
-                                        {/* <option value="anyExtendedKeyUsage">Any extended key usage</option>
-                                        <option value="serverAuth">Server authentifcation</option>
-                                        <option value="clientAuth">Client autentification</option>
-                                        <option value="codeSigning">Code signin</option>
-                                        <option value="emailProtection">Email protection</option>
-                                        <option value="timeStamping">Time Stamping</option>
-                                        <option value="OCSPSigning">OCSP signin</option>
-                                        <option value="MicrosoftCertificateTrustListSigning">Microsoft certificate trust list signing</option>
-                                        <option value="MicrosoftEncryptedFileSystem">Microsoft encrypted filesystem</option> */}
                                         {this.props.extensions && this.props.extensions.map((item, idx) => {
                                             return (
                                                 <option value={item.name}>{item.text}</option>
@@ -291,5 +282,5 @@ class form extends React.Component {
 
 
 export default reduxForm({
-    form: 'form'  // a unique identifier for this form
+    form: 'form'
 })(form)
