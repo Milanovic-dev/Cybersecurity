@@ -18,9 +18,9 @@ app.use(bodyParser.raw({
 }))
 
 const options = {
-    ca: [fs.readFileSync('intermediate.crt'), fs.readFileSync('root.crt')],
-    cert: fs.readFileSync('endEntity.crt'),
-    key: fs.readFileSync('endEntity.key')
+    ca: [fs.readFileSync('https/intermediate.crt'), fs.readFileSync('https/root.crt')],
+    cert: fs.readFileSync('https/endEntity.crt'),
+    key: fs.readFileSync('https/endEntity.key')
 };
 
 const https = require("https");
