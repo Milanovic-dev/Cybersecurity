@@ -17,21 +17,29 @@ const CertificateService = {
             if(parentObject == undefined){
                 return {status: 404 };
             }
-            let result = await generateCertificate(certObject, parentObject.certificate, parentObject.privateKey); //[certificate, privateKey]
-            console.log(result);
-            fs.writeFileSync('certificates/test.p12', result);
-            //let storeResult = await CertificateStore.storeAsync(result, parentId);
-            //return {status: storeResult.status, response: { "insertedID": storeResult.insertedId }};
-            return {status : 200}
+            console.log("Generating Cert...");
+            let resultBuffer = await generateCertificate(certObject, parentObject.certificate, parentObject.privateKey, 'keystorepassword'); //[certificate, privateKey]
+            console.log("Storing...");
+            let storeResult = await CertificateStore.storeAsync(resultBuffer, parentId);
+
+            if(storeResult.status == 200){
+                console.log("Completed. InsertedID: " + storeResult.insertedId);
+            }
+
+            return {status: storeResult.status, response: { "insertedID": storeResult.insertedId }};
         }
         else
         {
-            let result = await generateCertificate(certObject); //[certificate, privateKey]
-            console.log(result);
-            //let storeResult = await CertificateStore.storeAsync(result);
-            fs.writeFileSync('certificates/test.p12', result);
-            //return {status: storeResult.status, response: { "insertedID": storeResult.insertedId }};
-            return {status : 200}
+            console.log("Generating Cert...");
+            let resultBuffer = await generateCertificate(certObject, null, null, 'keystorepassword');
+            console.log("Storing...");
+            let storeResult = await CertificateStore.storeAsync(resultBuffer);
+
+            if(storeResult.status == 200){
+                console.log("Completed. InsertedID: " + storeResult.insertedId);
+            }
+
+            return {status: storeResult.status, response: { "insertedID": storeResult.insertedId }};
         }
     },
     fetchCertificateAsync: async (id) => {
@@ -42,6 +50,7 @@ const CertificateService = {
         };
     },
     fetchCertificateTreeAsync: async (root) => {
+        console.log("Fetching Tree...")
         let result = await CertificateStore.fetchTreeAsync(root);
 
         if(result == undefined){
@@ -49,6 +58,11 @@ const CertificateService = {
         }
         
         let status = result != undefined ? 200 : 404;
+
+        if(status == 200){
+            console.log("Completed.");
+        }
+
         return {
             status: status,
             response: result
@@ -72,7 +86,9 @@ const CertificateService = {
         };
     },
     removeAll: async () => {
+        console.log("Cleaning Certificates...");
         await CertificateStore.dropAsync();
+        console.log("Completed.");
         return { status: 200 };
     },
     revokeAsync: async (id) => {

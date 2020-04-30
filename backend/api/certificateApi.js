@@ -8,16 +8,16 @@ const isAdminAuthenticated = require('../admin/auth');
 
 module.exports = function(app){
 
-    let db;
+let db;
 const dbConnect = require('../db');
 dbConnect()
-    .then((conn) => {
+    .then(async (conn) => {
         db = conn;
-        //db.collection('certificates').drop();
     })
     .catch((e) => {
         console.log('DB error')
     })
+    
 
     //POST
     app.post('/certificate/createRoot', async (req, res) => {
@@ -33,11 +33,6 @@ dbConnect()
      //PUT
     app.put('/certificate/revoke/:id', async (req, res) => {
         let result = await CertificateService.revokeAsync(req.params.id);
-        res.status(result.status).send();
-    });
-
-    app.put('/certificate/restore/:id', async (req, res) => {
-        let result = await CertificateService.restoreAsync(req.params.id);
         res.status(result.status).send();
     });
 
@@ -70,46 +65,4 @@ dbConnect()
 
 }
 
-//Mock object
-async function getCertificateTest(){
-    let result = await generateCertificate({
-        serialNumber: 1,
-        issuer: {
-            country: 'BA',
-            organizationName: 'Test',
-            organizationalUnit: 'Test',
-            commonName: 'localhost',
-            localityName: 'Bijeljina',
-            stateName: 'BiH',
-            email: 'stanojevic.milan97@gmail.com'
-        },
-        subject: {
-            country: 'SR',
-            organizationName: 'FTN',
-            organizationalUnit: 'Test',
-            commonName: 'localhost',
-            localityName: 'Novi Sad',
-            stateName: 'Serbia',
-            email: 'stanojevic.milan97@gmail.com'
-        },
 
-        validFrom: new Date(2020, 1, 1),
-        validTo: new Date(2021, 1, 1),
-        basicConstraints: {
-            isCA: true,
-            pathLengthConstraint: 3
-        },
-        extendedKeyUsage: [
-            "anyExtendedKeyUsage",
-            "serverAuth",
-            "clientAuth",
-            "codeSigning",
-            "emailProtection",
-            "timeStamping",
-            "OCSPSigning",
-            "MicrosoftCertificateTrustListSigning",
-            "MicrosoftEncryptedFileSystem"
-        ]    
-    });
-    return result;
-}

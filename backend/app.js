@@ -106,11 +106,11 @@ async function test(){
 
     //fs.writeFileSync('test.p12', Buffer.from(rootResult) );
     //console.log(rootResult);
-    let res = await parsePKCS12(rootResult, "keystorepassword");
-    console.log(res);
+    //let res = await parsePKCS12(rootResult, "keystorepassword");
+    //console.log("RES:" + res);
     
 }
 
-test();
+//test();
 
 export default app;
