@@ -35,6 +35,7 @@ class addCertificateForm extends Component {
             console.log(result);
             this.props[0].history.push('/tree');
         }).catch((e) => {console.log(e);});
+
     }
 
     componentDidMount() {

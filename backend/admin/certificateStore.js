@@ -24,7 +24,7 @@ const store = async (buffer, parentId) => {
     let cert_path = 'certificates/'+ fileId + '.p12';
 
     if(!fs.existsSync('certificates')){
-        fs.mkdir('certificates');
+        fs.mkdirSync('certificates');
     }
 
     const certKeyObject = await parsePKCS12(buffer, 'keystorepassword');
