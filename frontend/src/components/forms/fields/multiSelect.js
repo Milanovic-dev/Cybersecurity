@@ -30,7 +30,7 @@ class MultiSelect extends Component {
     }
 
     render() {
-
+        if(!this.props.children) return null;
         return (
             <div className="input-wrap">
                 <label>{this.props.label}</label>

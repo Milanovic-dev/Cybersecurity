@@ -153,7 +153,6 @@ function createCertificateInternal(params, parentCertificate, caPrivateKey) {
         }
 
     } else /*if (parentCertificate)*/ {
-        //console.log(parentCertificate.subject)
         certificate.issuer.typesAndValues = parentCertificate.subject.typesAndValues;
         /*for (let key in parentCertificate.subject) {
             if (parentCertificate.subject.hasOwnProperty(key)) {
@@ -268,7 +267,6 @@ function createCertificateInternal(params, parentCertificate, caPrivateKey) {
                 })).toSchema()
             })]
     });
-    //console.log(infoAccess);
     certificate.extensions.push(new Extension({
         extnID: "1.3.6.1.5.5.7.1.1",
         critical: false,
@@ -281,10 +279,7 @@ function createCertificateInternal(params, parentCertificate, caPrivateKey) {
     //region Create a new key pair 
     sequence = sequence.then(() => {
         //region Get default algorithm parameters for key generation
-        console.log('aaaa');
         const algorithm = getAlgorithmParameters(signAlg, "generatekey");
-        console.log(algorithm);
-        //console.log(algorithm);
         if ("hash" in algorithm.algorithm)
             algorithm.algorithm.hash.name = hashAlg;
         //endregion
@@ -322,7 +317,6 @@ function createCertificateInternal(params, parentCertificate, caPrivateKey) {
         if (parentCertificate) {
             for (let i = 0; i < parentCertificate.extensions.length; i++) {
                 if (parentCertificate.extensions[i].extnID == "2.5.29.14") {
-                    console.log(bufferToHexCodes(asn1js.fromBER(parentCertificate.extensions[i].extnValue.valueBlock.valueHex).result.valueBlock.valueHex))
                     var issuerKeyIDExtension = new Extension({
                         extnID: "2.5.29.35",
                         critical: false,
@@ -397,8 +391,7 @@ function generateCertificate(params, parentCertificate, parentPrivateKey, keySto
     if (parentCertificate) {
         return importPrivateKey(parentPrivateKey).then((privateKey) => {
             return createCertificateInternal(params, loadCertificate(parentCertificate), privateKey).then((result) => {
-
-
+                
                 const certificateString = String.fromCharCode.apply(null, new Uint8Array(result.certificateBuffer));
                 const privateKeyString = String.fromCharCode.apply(null, new Uint8Array(result.privateKeyBuffer));
 
@@ -631,7 +624,6 @@ function loadCertificate(cert) {
 
     //region Decode existing X.509 certificate
     const asn1 = asn1js.fromBER(certificateBuffer);
-    //console.log(asn1.result)
     const certificate = new Certificate({ schema: asn1.result });
     //endregion
     return certificate;
@@ -654,7 +646,6 @@ function parseCertificate(cert) {
 
     //region Decode existing X.509 certificate
     const asn1 = asn1js.fromBER(certificateBuffer);
-    //console.log(asn1.result)
     const certificate = new Certificate({ schema: asn1.result });
     //endregion
 
@@ -704,7 +695,6 @@ function parseCertificate(cert) {
 
     //region Put information about certificate extensions
     if ("extensions" in certificate) {
-        //console.log(certificate.extensions[0].toJSON())
         for (let i = 0; i < certificate.extensions.length; i++) {
             if (certificate.extensions[i].extnID == "2.5.29.35") {
                 const authKeyIdentifier = new AuthorityKeyIdentifier({ schema: asn1js.fromBER(certificate.extensions[i].extnValue.valueBlock.valueHex).result });
@@ -738,7 +728,6 @@ function parseCertificate(cert) {
 
             } else if (certificate.extensions[i].extnID == "2.5.29.19") {
                 const basicConstraints = new BasicConstraints({ schema: asn1js.fromBER(certificate.extensions[i].extnValue.valueBlock.valueHex).result }).toJSON();
-                //console.log(basicConstraints.toJSON());
                 result.extensions[certificate.extensions[i].extnID] = {
                     extnID: certificate.extensions[i].extnID,
                     name: "Basic Constraints",
@@ -937,13 +926,11 @@ function parsePKCS12(buffer, password) {
     let sequence = Promise.resolve();
 
     const passwordConverted = stringToArrayBuffer(password);
-    console.log(passwordConverted);
     //endregion
 
     //region Parse internal PKCS#12 values
     const asn1 = asn1js.fromBER(buffer);
     let pkcs12 = new PFX({ schema: asn1.result });
-    console.log( (pkcs12.authSafe.content instanceof asn1js.OctetString) === false );
     //region Parse "AuthenticatedSafe" value of PKCS#12 data
     sequence = sequence.then(() => pkcs12.parseInternalValues({
         password: passwordConverted,
