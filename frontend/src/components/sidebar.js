@@ -29,7 +29,7 @@ class Sidebar extends Component {
                         <li>
                             <Link to='/addCertificate' className={this.props[0].location.pathname === '/addCertificate' ? 'active' : null}>
                                 <Isvg src={add} />
-                                Create new certificate
+                                Create root certificate
                             </Link>
                         </li>
                     </ul>
