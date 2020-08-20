@@ -13,7 +13,7 @@
     "@peculiar/webcrypto": "^1.0.29",
     "array-unique": "^0.3.2",
     "asn1js": "latest",
-    "bcrypt": "^3.0.6",
+    "bcrypt": "^5.0.0",
     "body-parser": "^1.19.0",
     "chai-like": "^1.1.1",
     "chai-things": "^0.2.0",
