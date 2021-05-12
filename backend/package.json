@@ -23,7 +23,7 @@
     "moment": "^2.24.0",
     "mongodb": "^3.3.4",
     "node-webcrypto-ossl": "latest",
-    "nodemailer": "^6.3.1",
+    "nodemailer": "^6.4.16",
     "pkijs": "latest",
     "pvutils": "^1.0.17",
     "selenium-webdriver": "^4.0.0-alpha.5",
